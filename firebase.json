@@ -1,0 +1,24 @@
+{
+  "hosting": {
+    "public": ".",
+    "ignore": [
+      "firebase.json",
+      ".firebaserc",
+      "**/.*",
+      "create_excel.js",
+      "package.json",
+      "package-lock.json",
+      "node_modules/**",
+      "*.xlsx",
+      "DS English.html",
+      "DS 로고.jpg",
+      "학원 관리.png"
+    ],
+    "rewrites": [
+      {
+        "source": "**",
+        "destination": "/index.html"
+      }
+    ]
+  }
+}

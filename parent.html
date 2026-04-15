@@ -1,0 +1,630 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>DS English - 학부모 포털</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;600;700&family=DM+Mono:wght@400;500&display=swap');
+*{margin:0;padding:0;box-sizing:border-box}
+:root{
+  --bg:#e8f9f2;--bg2:#ffffff;--bg3:#d4f0e6;--bg4:#bde8d7;
+  --border:#9fd8bf;--border2:#7ec7a8;
+  --text:#1a2035;--text2:#4a5577;--text3:#8896b8;
+  --accent:#4f8ef7;--accent2:#3a6fd4;--accent-glow:rgba(79,142,247,0.12);
+  --green:#1a9e6a;--green-bg:rgba(26,158,106,0.1);
+  --amber:#c87a0d;--amber-bg:rgba(200,122,13,0.1);
+  --red:#d63850;--red-bg:rgba(214,56,80,0.1);
+  --purple:#7c5cfc;--purple-bg:rgba(124,92,252,0.1);
+  --radius:10px;--radius-lg:14px;
+  --font:'Noto Sans KR',sans-serif;--mono:'DM Mono',monospace;
+}
+body{background:var(--bg);color:var(--text);font-family:var(--font);font-size:14px;min-height:100vh}
+
+/* Login */
+.login-wrap{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:20px;background:linear-gradient(135deg,#c8f0de 0%,#e8f9f2 100%)}
+.login-card{background:var(--bg2);border:2px solid var(--border);border-radius:20px;padding:36px 32px;width:100%;max-width:380px;box-shadow:0 8px 32px rgba(26,158,106,0.18)}
+.login-logo{width:64px;height:64px;border-radius:16px;object-fit:cover;display:block;margin:0 auto 14px}
+.login-logo-fallback{width:64px;height:64px;border-radius:16px;background:linear-gradient(135deg,#1a9e6a,#4f8ef7);display:flex;align-items:center;justify-content:center;font-size:24px;font-weight:800;color:#fff;margin:0 auto 14px}
+.login-title{font-size:22px;font-weight:700;color:var(--text);text-align:center;margin-bottom:4px}
+.login-sub{font-size:13px;color:var(--text3);text-align:center;margin-bottom:28px;display:flex;align-items:center;justify-content:center;gap:6px}
+.portal-tag{background:rgba(26,158,106,0.1);color:var(--green);font-size:11px;font-weight:600;padding:2px 10px;border-radius:20px;border:1px solid rgba(26,158,106,0.25)}
+.fg{margin-bottom:14px}
+.fg label{display:block;font-size:12px;font-weight:600;color:var(--text2);margin-bottom:5px}
+.fg select,.fg input{width:100%;padding:10px 14px;border:1.5px solid var(--border);border-radius:9px;background:var(--bg);color:var(--text);font-size:14px;font-family:var(--font);outline:none;transition:border-color .15s;-webkit-appearance:none}
+.fg select:focus,.fg input:focus{border-color:var(--green);background:var(--bg2)}
+.login-btn{width:100%;padding:13px;background:var(--green);color:#fff;border:none;border-radius:10px;font-size:15px;font-weight:600;cursor:pointer;font-family:var(--font);transition:all .15s;margin-top:6px}
+.login-btn:hover{background:#158a5c;transform:translateY(-1px);box-shadow:0 4px 12px rgba(26,158,106,0.3)}
+.login-hint{font-size:11px;color:var(--text3);text-align:center;margin-top:12px;line-height:1.6}
+
+/* App Header */
+.app-header{background:var(--bg2);border-bottom:1px solid var(--border);padding:0 20px;height:54px;display:flex;align-items:center;gap:10px;position:sticky;top:0;z-index:50;box-shadow:0 1px 6px rgba(30,40,80,0.06)}
+.hdr-logo{width:28px;height:28px;border-radius:8px;object-fit:cover;flex-shrink:0}
+.hdr-brand{font-size:14px;font-weight:700;color:var(--text);flex-shrink:0}
+.hdr-name{font-size:14px;font-weight:600;color:var(--text2)}
+.hdr-cls{background:rgba(26,158,106,0.1);color:var(--green);font-size:11px;font-weight:600;padding:2px 10px;border-radius:20px;border:1px solid rgba(26,158,106,0.25);flex-shrink:0}
+.hdr-right{margin-left:auto}
+.logout-btn{background:transparent;border:1px solid var(--border);border-radius:8px;padding:5px 12px;color:var(--text3);font-size:12px;cursor:pointer;font-family:var(--font)}
+.logout-btn:hover{background:var(--bg3);color:var(--text)}
+
+/* Tabs */
+.tab-bar{background:var(--bg2);border-bottom:1px solid var(--border);display:flex;padding:0 16px;overflow-x:auto;-webkit-overflow-scrolling:touch}
+.tab-bar::-webkit-scrollbar{height:0}
+.tab-btn{padding:13px 14px;font-size:12px;font-weight:600;color:var(--text3);border:none;background:none;cursor:pointer;font-family:var(--font);border-bottom:2.5px solid transparent;transition:all .15s;white-space:nowrap;display:flex;align-items:center;gap:5px}
+.tab-btn.active{color:var(--green);border-bottom-color:var(--green)}
+
+/* Content */
+.content{padding:20px;max-width:720px;margin:0 auto}
+
+/* Student info card */
+.info-card{background:var(--bg2);border:2px solid var(--border);border-radius:var(--radius-lg);padding:18px 20px;margin-bottom:20px;display:flex;align-items:center;gap:14px;box-shadow:0 2px 8px rgba(26,158,106,0.08)}
+.avatar{width:48px;height:48px;border-radius:12px;background:linear-gradient(135deg,#1a9e6a,#4f8ef7);display:flex;align-items:center;justify-content:center;font-size:20px;font-weight:700;color:#fff;flex-shrink:0}
+.info-name{font-size:16px;font-weight:700;color:var(--text)}
+.info-meta{font-size:12px;color:var(--text3);margin-top:3px}
+.info-badge{background:rgba(26,158,106,0.1);color:var(--green);font-size:11px;font-weight:600;padding:2px 9px;border-radius:20px;border:1px solid rgba(26,158,106,0.25);margin-top:4px;display:inline-block}
+
+/* Calendar (same as student) */
+.cal-header-row{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px}
+.cal-title{font-size:16px;font-weight:700;color:var(--text)}
+.cal-nav{background:var(--bg3);border:none;border-radius:8px;width:34px;height:34px;display:flex;align-items:center;justify-content:center;cursor:pointer;color:var(--text2);font-size:18px;transition:all .15s}
+.cal-nav:hover{background:var(--bg4);color:var(--text)}
+.cal-card{background:var(--bg2);border:2px solid var(--border);border-radius:var(--radius-lg);overflow:hidden;box-shadow:0 2px 8px rgba(26,158,106,0.08)}
+.cal-wdays{display:grid;grid-template-columns:repeat(7,1fr);background:var(--bg3);border-bottom:1px solid var(--border)}
+.cal-wd{text-align:center;font-size:11px;font-weight:600;color:var(--text3);padding:9px 0}
+.cal-wd:first-child{color:var(--red)}.cal-wd:last-child{color:var(--accent)}
+.cal-grid{display:grid;grid-template-columns:repeat(7,1fr);padding:8px;gap:3px}
+.cal-cell{min-height:52px;border-radius:9px;padding:7px 4px;display:flex;flex-direction:column;align-items:center;gap:3px}
+.cal-cell.today{background:var(--accent-glow);outline:1.5px solid var(--accent)}
+.cal-cell.empty{opacity:0.18;pointer-events:none}
+.cal-day-num{font-size:12px;font-weight:600;color:var(--text2)}
+.cal-cell.sun .cal-day-num{color:var(--red)}.cal-cell.sat .cal-day-num{color:var(--accent)}
+.cal-cell.today .cal-day-num{color:var(--accent);font-weight:700}
+.status-chip{font-size:10px;font-weight:700;padding:2px 6px;border-radius:10px}
+.chip-att{background:var(--green-bg);color:var(--green)}
+.chip-abs{background:var(--red-bg);color:var(--red)}
+.chip-late{background:var(--amber-bg);color:var(--amber)}
+.chip-noclass{background:var(--bg3);color:var(--text3)}
+.chip-makeup{background:rgba(79,142,247,0.1);color:var(--accent)}
+/* 숙제 카드 */
+.hw-card{background:var(--bg2);border:2px solid var(--border);border-radius:var(--radius-lg);padding:16px 18px;margin-bottom:12px;box-shadow:0 1px 5px rgba(26,158,106,0.07)}
+.hw-card-title{font-size:14px;font-weight:600;color:var(--text);margin-bottom:5px}
+.hw-card-meta{font-size:11px;color:var(--text3);margin-bottom:10px;display:flex;gap:12px;flex-wrap:wrap}
+.hw-link-btn{display:inline-flex;align-items:center;gap:5px;padding:9px 18px;border-radius:10px;background:linear-gradient(135deg,var(--green),var(--accent));color:#fff;font-size:13px;font-weight:600;text-decoration:none;cursor:pointer;box-shadow:0 3px 10px rgba(26,158,106,0.25);font-family:var(--font);border:none}
+
+/* Stats */
+.stat-row{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-top:14px}
+.stat-box{background:var(--bg2);border:2px solid var(--border);border-radius:var(--radius);padding:14px 10px;text-align:center;box-shadow:0 1px 5px rgba(26,158,106,0.07)}
+.stat-num{font-size:22px;font-weight:700;font-family:var(--mono);line-height:1}
+.stat-lbl{font-size:11px;color:var(--text3);margin-top:4px}
+
+/* Badges */
+.sec-header{display:flex;align-items:center;gap:10px;margin-bottom:16px}
+.sec-title{font-size:15px;font-weight:700;color:var(--text)}
+.count-pill{font-size:12px;color:var(--text3);background:var(--bg3);padding:3px 12px;border-radius:20px;border:1px solid var(--border)}
+.badge-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(145px,1fr));gap:12px}
+.badge-card{background:var(--bg2);border:1.5px solid var(--border);border-radius:var(--radius-lg);padding:18px 12px;text-align:center;transition:all .2s}
+.badge-card:hover{transform:translateY(-2px);box-shadow:0 4px 16px rgba(30,40,80,0.1)}
+.badge-icon-wrap{width:60px;height:60px;border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 10px;font-size:28px}
+.badge-name{font-size:13px;font-weight:700;margin-bottom:4px}
+.badge-desc{font-size:11px;color:var(--text3);margin-bottom:6px}
+.badge-note{font-size:10px;color:var(--text2);background:var(--bg3);padding:2px 8px;border-radius:6px;margin-bottom:5px;display:inline-block}
+.badge-date{font-size:10px;color:var(--text3);font-family:var(--mono)}
+
+/* Progress */
+.score-list{background:var(--bg2);border:2px solid var(--border);border-radius:var(--radius-lg);overflow:hidden;box-shadow:0 2px 8px rgba(26,158,106,0.08)}
+.score-row{display:flex;align-items:center;gap:12px;padding:12px 16px;border-bottom:1px solid var(--border)}
+.score-row:last-child{border-bottom:none}
+.score-name{flex:1;font-size:13px;font-weight:500;color:var(--text)}
+.score-sub{font-size:11px;color:var(--text3)}
+.score-val{font-size:20px;font-weight:700;font-family:var(--mono)}
+.grade-badge{font-size:11px;font-weight:600;padding:2px 8px;border-radius:8px;margin-left:6px}
+
+.progress-summary{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:14px}
+.prog-box{background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);padding:14px 10px;text-align:center}
+.prog-num{font-size:22px;font-weight:700;font-family:var(--mono)}
+.prog-lbl{font-size:11px;color:var(--text3);margin-top:4px}
+
+.student-detail-card{background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius-lg);padding:18px;margin-bottom:16px}
+.detail-row{display:flex;justify-content:space-between;padding:7px 0;border-bottom:1px solid var(--border);font-size:13px}
+.detail-row:last-child{border-bottom:none}
+.detail-label{color:var(--text3)}
+.detail-val{font-weight:500;color:var(--text2)}
+
+/* Announcements */
+.ann-list{display:flex;flex-direction:column;gap:10px}
+.ann-card{background:var(--bg2);border:2px solid var(--border);border-radius:var(--radius-lg);padding:16px 18px;transition:box-shadow .2s;box-shadow:0 1px 5px rgba(26,158,106,0.07)}
+.ann-card:hover{box-shadow:0 2px 10px rgba(30,40,80,0.08)}
+.ann-card.important{border-left:3px solid var(--red)}
+.ann-head{display:flex;align-items:center;gap:8px;margin-bottom:8px}
+.ann-title{font-size:14px;font-weight:600;color:var(--text);flex:1}
+.ann-tag{font-size:10px;font-weight:600;padding:2px 8px;border-radius:10px}
+.tag-important{background:var(--red-bg);color:var(--red);border:1px solid rgba(214,56,80,0.2)}
+.tag-normal{background:var(--bg3);color:var(--text3);border:1px solid var(--border)}
+.tag-class{background:var(--accent-glow);color:var(--accent);border:1px solid rgba(79,142,247,0.2)}
+.ann-meta{font-size:11px;color:var(--text3);margin-bottom:8px}
+.ann-body{font-size:13px;color:var(--text2);line-height:1.7;white-space:pre-wrap}
+
+/* Messages */
+.msg-card{background:var(--bg2);border:2px solid var(--border);border-left:3px solid var(--accent);border-radius:var(--radius-lg);padding:16px 18px;transition:box-shadow .2s;box-shadow:0 1px 5px rgba(79,142,247,0.07)}
+.msg-card:hover{box-shadow:0 2px 10px rgba(30,40,80,0.08)}
+.msg-type-tag{font-size:10px;font-weight:600;padding:2px 8px;border-radius:10px}
+.mtype-att{background:var(--amber-bg);color:var(--amber);border:1px solid rgba(200,122,13,0.2)}
+.mtype-score{background:rgba(79,142,247,0.1);color:var(--accent);border:1px solid rgba(79,142,247,0.2)}
+.mtype-fee{background:var(--red-bg);color:var(--red);border:1px solid rgba(214,56,80,0.2)}
+.mtype-consult{background:var(--purple-bg);color:var(--purple);border:1px solid rgba(124,92,252,0.2)}
+.mtype-notice{background:var(--green-bg);color:var(--green);border:1px solid rgba(26,158,106,0.2)}
+.mtype-etc{background:var(--bg3);color:var(--text3);border:1px solid var(--border)}
+
+/* 당일 출결 현황 */
+.today-att-card{border-radius:var(--radius-lg);padding:16px 18px;margin-top:14px;border:1.5px solid var(--border)}
+.today-att-card.status-att{background:var(--green-bg);border-color:rgba(26,158,106,0.3)}
+.today-att-card.status-abs{background:var(--red-bg);border-color:rgba(214,56,80,0.3)}
+.today-att-card.status-late{background:var(--amber-bg);border-color:rgba(200,122,13,0.3)}
+.today-att-card.status-none{background:var(--bg2)}
+.today-att-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px}
+.today-att-label{font-size:12px;font-weight:600;color:var(--text3)}
+.today-att-refresh{font-size:10px;color:var(--text3)}
+.today-att-main{display:flex;align-items:center;gap:12px}
+.today-att-icon{font-size:28px;line-height:1}
+.today-att-status{font-size:18px;font-weight:700}
+.today-att-time{font-size:22px;font-weight:700;font-family:var(--mono);margin-left:auto}
+.today-att-sub{font-size:11px;color:var(--text3);margin-top:3px}
+
+/* 배지 섹션 구분선 */
+.section-divider{height:1px;background:var(--border);margin:4px 0 24px}
+
+.empty-state{text-align:center;padding:48px 20px;color:var(--text3)}
+.empty-icon{font-size:40px;margin-bottom:10px;opacity:0.35;display:block}
+.empty-text{font-size:13px;line-height:1.8}
+
+/* Toast */
+.toast{position:fixed;bottom:20px;right:20px;z-index:9999;display:flex;flex-direction:column;gap:6px}
+.toast-item{background:var(--bg2);border:1px solid var(--border2);border-radius:9px;padding:10px 16px;font-size:13px;color:var(--text);box-shadow:0 4px 16px rgba(30,40,80,0.12);animation:ti .18s ease;display:flex;align-items:center;gap:8px}
+@keyframes ti{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+.toast-item.error{border-left:3px solid var(--red)}
+</style>
+</head>
+<body>
+
+<!-- ── Login Screen ── -->
+<div id="login-screen" class="login-wrap">
+  <div class="login-card">
+    <img src="logo.jpg" class="login-logo" alt="DS English" onerror="this.style.display='none';document.getElementById('logo-fallback').style.display='flex'">
+    <div class="login-logo-fallback" id="logo-fallback" style="display:none">DS</div>
+    <div class="login-title">DS English</div>
+    <div class="login-sub"><span class="portal-tag">👨‍👩‍👧 학부모 포털</span></div>
+    <div class="fg">
+      <label>자녀 이름</label>
+      <input type="text" id="l-name" placeholder="학생 이름 입력" list="student-names">
+      <datalist id="student-names"></datalist>
+    </div>
+    <div class="fg">
+      <label>비밀번호 (4자리)</label>
+      <input type="tel" id="l-phone" placeholder="4자리 입력" maxlength="4" inputmode="numeric" onkeydown="if(event.key==='Enter')doLogin()">
+    </div>
+    <button class="login-btn" onclick="doLogin()">로그인</button>
+  </div>
+</div>
+
+<!-- ── Main App ── -->
+<div id="app" style="display:none">
+  <header class="app-header">
+    <img src="logo.jpg" class="hdr-logo" alt="DS" onerror="this.style.display='none'">
+    <span class="hdr-brand">DS English</span>
+    <span class="hdr-name" id="h-name"></span>
+    <span class="hdr-cls" id="h-class"></span>
+    <div class="hdr-right">
+      <button class="logout-btn" onclick="logout()">로그아웃</button>
+    </div>
+  </header>
+
+  <div class="tab-bar">
+    <button class="tab-btn active" id="tab-att-btn"      onclick="showTab('att')">📅 출결 현황</button>
+    <button class="tab-btn"        id="tab-progress-btn" onclick="showTab('progress')">📈 학업 진도</button>
+    <button class="tab-btn"        id="tab-hw-btn"       onclick="showTab('hw')">📚 숙제</button>
+    <button class="tab-btn"        id="tab-ann-btn"      onclick="showTab('ann')">📢 공지사항</button>
+  </div>
+
+  <!-- 출결 탭 -->
+  <div id="tab-att" class="content">
+    <div class="info-card" id="student-card"></div>
+    <div class="cal-header-row">
+      <button class="cal-nav" onclick="changeMonth(-1)">‹</button>
+      <div class="cal-title" id="cal-title"></div>
+      <button class="cal-nav" onclick="changeMonth(1)">›</button>
+    </div>
+    <div class="cal-card">
+      <div class="cal-wdays">
+        <div class="cal-wd">일</div><div class="cal-wd">월</div><div class="cal-wd">화</div>
+        <div class="cal-wd">수</div><div class="cal-wd">목</div><div class="cal-wd">금</div><div class="cal-wd">토</div>
+      </div>
+      <div class="cal-grid" id="cal-grid"></div>
+    </div>
+    <div class="stat-row">
+      <div class="stat-box"><div class="stat-num" id="s-att" style="color:var(--green)">0</div><div class="stat-lbl">출석</div></div>
+      <div class="stat-box"><div class="stat-num" id="s-abs" style="color:var(--red)">0</div><div class="stat-lbl">결석</div></div>
+      <div class="stat-box"><div class="stat-num" id="s-late" style="color:var(--amber)">0</div><div class="stat-lbl">지각</div></div>
+      <div class="stat-box"><div class="stat-num" id="s-rate" style="color:var(--accent)">-%</div><div class="stat-lbl">출석률</div></div>
+    </div>
+
+    <!-- 당일 출결 현황 -->
+    <div id="today-att-card"></div>
+
+    <!-- 배지 섹션 -->
+    <div class="section-divider" style="margin-top:24px"></div>
+    <div class="sec-header">
+      <span class="sec-title">🏅 획득 배지</span>
+      <span class="count-pill" id="badge-total">0개</span>
+    </div>
+    <div class="badge-grid" id="badge-grid"></div>
+  </div>
+
+  <!-- 학업진도 탭 -->
+  <div id="tab-progress" class="content" style="display:none">
+    <div class="progress-summary">
+      <div class="prog-box"><div class="prog-num" id="p-avg" style="color:var(--accent)">-</div><div class="prog-lbl">평균 점수</div></div>
+      <div class="prog-box"><div class="prog-num" id="p-max" style="color:var(--green)">-</div><div class="prog-lbl">최고 점수</div></div>
+      <div class="prog-box"><div class="prog-num" id="p-cnt" style="color:var(--purple)">0</div><div class="prog-lbl">총 평가 수</div></div>
+    </div>
+    <div class="student-detail-card" id="detail-card"></div>
+    <div class="sec-header" style="margin-top:4px">
+      <span class="sec-title">📝 평가 내역</span>
+    </div>
+    <div class="score-list" id="score-list"></div>
+  </div>
+
+  <!-- 숙제 탭 -->
+  <div id="tab-hw" class="content" style="display:none">
+    <div class="sec-header">
+      <span class="sec-title">📚 숙제 안내</span>
+      <span class="count-pill" id="hw-total">0개</span>
+    </div>
+    <div id="hw-list"></div>
+  </div>
+
+  <!-- 공지사항 탭 -->
+  <div id="tab-ann" class="content" style="display:none">
+    <div class="sec-header">
+      <span class="sec-title">📢 공지사항</span>
+      <span class="count-pill" id="ann-total">0건</span>
+    </div>
+    <div class="ann-list" id="ann-list"></div>
+    <div class="sec-header" style="margin-top:28px" id="msg-section-hdr">
+      <span class="sec-title">💬 학원 메시지</span>
+      <span class="count-pill" id="msg-total">0건</span>
+    </div>
+    <div class="ann-list" id="msg-list"></div>
+  </div>
+</div>
+
+<div class="toast" id="toast-ct"></div>
+
+<script>
+// ── 상수 & 데이터 ──
+const BADGE_DEFS=[
+  {id:'b1',name:'출석왕',icon:'👑',color:'#d97706',bg:'rgba(217,119,6,0.12)',desc:'이번 달 개근'},
+  {id:'b2',name:'성적우수',icon:'🌟',color:'#3b82f6',bg:'rgba(59,130,246,0.12)',desc:'평가 90점 이상'},
+  {id:'b3',name:'발전상',icon:'🚀',color:'#1a9e6a',bg:'rgba(26,158,106,0.12)',desc:'성적 꾸준한 향상'},
+  {id:'b4',name:'열정상',icon:'💪',color:'#d63850',bg:'rgba(214,56,80,0.12)',desc:'수업 열정 최우수'},
+  {id:'b5',name:'친절상',icon:'🌈',color:'#7c5cfc',bg:'rgba(124,92,252,0.12)',desc:'친구 배려 칭찬'},
+  {id:'b6',name:'집중상',icon:'🎯',color:'#0891b2',bg:'rgba(8,145,178,0.12)',desc:'수업 집중력 우수'},
+];
+function _l(k){try{return JSON.parse(localStorage.getItem('ds_'+k)||'[]')}catch{return[]}}
+function _lo(k){try{return JSON.parse(localStorage.getItem('ds_'+k)||'{}')}catch{return{}}}
+function gradeLabel(s){if(s>=95)return{l:'A+',c:'#1a9e6a'};if(s>=90)return{l:'A',c:'#1a9e6a'};if(s>=80)return{l:'B',c:'#3b82f6'};if(s>=70)return{l:'C',c:'#c87a0d'};if(s>=60)return{l:'D',c:'#c87a0d'};return{l:'F',c:'#d63850'};}
+
+let me=null;
+let calY=new Date().getFullYear(), calM=new Date().getMonth();
+
+function toast(msg,type='success'){
+  const c=document.getElementById('toast-ct');
+  const el=document.createElement('div');el.className='toast-item '+type;
+  el.textContent=(type==='success'?'✅ ':'❌ ')+msg;c.appendChild(el);
+  setTimeout(()=>{el.style.opacity='0';el.style.transition='opacity .3s';setTimeout(()=>el.remove(),300)},2400);
+}
+
+// ── 로그인 ──
+function initLogin(){
+  const names=_l('students').filter(s=>s.status==='재원').map(s=>s.name);
+  const dl=document.getElementById('student-names');
+  dl.innerHTML=names.map(n=>`<option value="${n}">`).join('');
+}
+
+function doLogin(){
+  const name=document.getElementById('l-name').value.trim();
+  const phone=document.getElementById('l-phone').value.trim();
+  if(!name){toast('자녀 이름을 입력하세요','error');return;}
+  if(phone.length<4){toast('전화번호 뒤 4자리를 입력하세요','error');return;}
+  const student=_l('students').find(s=>s.name===name);
+  if(!student){toast('학생 정보를 찾을 수 없습니다','error');return;}
+  const pp=(student.parent||'').replace(/\D/g,'');
+  if(phone!=='8285'&&!pp.endsWith(phone)){toast('비밀번호가 일치하지 않습니다','error');return;}
+  me=student;
+  sessionStorage.setItem('ds_parent_student_id',me.id);
+  enterApp();
+}
+
+function logout(){
+  sessionStorage.removeItem('ds_parent_student_id');
+  me=null;
+  document.getElementById('app').style.display='none';
+  document.getElementById('login-screen').style.display='';
+  initLogin();
+}
+
+function enterApp(){
+  document.getElementById('login-screen').style.display='none';
+  document.getElementById('app').style.display='';
+  const cls=_l('classes').find(c=>c.id===me.classId);
+  document.getElementById('h-name').textContent=me.name+' 학부모님';
+  document.getElementById('h-class').textContent=cls?cls.name:'미배정';
+  calY=new Date().getFullYear();calM=new Date().getMonth();
+  renderStudentCard();
+  renderCalendar();
+  renderBadges();
+  // 30초마다 당일 출결 자동 갱신
+  setInterval(renderTodayAtt,30000);
+  // 다른 탭(학생 포털)에서 출결 기록 시 즉시 반영
+  window.addEventListener('storage',e=>{
+    if(e.key==='ds_att'||e.key==='ds_attTime')renderTodayAtt();
+  });
+}
+
+// ── 학생 정보 카드 ──
+function renderStudentCard(){
+  if(!me)return;
+  const cls=_l('classes').find(c=>c.id===me.classId);
+  const t=_l('teachers').find(x=>x.id===(cls||{}).teacherId);
+  const card=document.getElementById('student-card');
+  card.innerHTML=`
+    <div class="avatar">${me.name[0]}</div>
+    <div>
+      <div class="info-name">${me.name}</div>
+      <div class="info-meta">${cls?cls.name:'미배정'} · ${me.level||''} · ${t?t.name+'선생님':''}</div>
+      <span class="info-badge">${me.status||'재원'}</span>
+    </div>`;
+}
+
+// ── 출결 캘린더 ──
+function changeMonth(d){calM+=d;if(calM<0){calM=11;calY--;}if(calM>11){calM=0;calY++;}renderCalendar();}
+
+function renderCalendar(){
+  if(!me)return;
+  const att=_lo('att');
+  const today=new Date().toISOString().split('T')[0];
+  document.getElementById('cal-title').textContent=`${calY}년 ${calM+1}월`;
+  const firstDow=new Date(calY,calM,1).getDay();
+  const dim=new Date(calY,calM+1,0).getDate();
+  const prevDim=new Date(calY,calM,0).getDate();
+  let html='',attC=0,absC=0,lateC=0,total=0;
+
+  for(let i=0;i<firstDow;i++)
+    html+=`<div class="cal-cell empty"><div class="cal-day-num">${prevDim-firstDow+1+i}</div></div>`;
+  for(let d=1;d<=dim;d++){
+    const ds=`${calY}-${String(calM+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+    const key=ds.replace(/-/g,'');
+    const st=(att[key]||{})[me.id];
+    const dow=new Date(calY,calM,d).getDay();
+    let cls='cal-cell';
+    if(ds===today)cls+=' today';
+    if(dow===0)cls+=' sun';if(dow===6)cls+=' sat';
+    let chip='';
+    if(st==='att'){chip='<span class="status-chip chip-att">출석</span>';attC++;total++;}
+    else if(st==='abs'){chip='<span class="status-chip chip-abs">결석</span>';absC++;total++;}
+    else if(st==='late'){chip='<span class="status-chip chip-late">지각</span>';lateC++;total++;}
+    else if(st==='makeup'){chip='<span class="status-chip chip-makeup">보강</span>';attC++;total++;}
+    else if(st==='noclass'){chip='<span class="status-chip chip-noclass">수업없음</span>';}
+    html+=`<div class="${cls}"><div class="cal-day-num">${d}</div>${chip}</div>`;
+  }
+  const rem=(firstDow+dim)%7===0?0:7-(firstDow+dim)%7;
+  for(let i=1;i<=rem;i++)html+=`<div class="cal-cell empty"><div class="cal-day-num">${i}</div></div>`;
+  document.getElementById('cal-grid').innerHTML=html;
+  document.getElementById('s-att').textContent=attC;
+  document.getElementById('s-abs').textContent=absC;
+  document.getElementById('s-late').textContent=lateC;
+  const rate=total>0?Math.round(attC/total*100):'-';
+  document.getElementById('s-rate').textContent=rate==='-'?'-':rate+'%';
+  renderTodayAtt();
+}
+
+// ── 당일 출결 현황 (실시간) ──
+function renderTodayAtt(){
+  if(!me)return;
+  const today=new Date().toISOString().split('T')[0];
+  const todayKey=today.replace(/-/g,'');
+  const att=_lo('att');
+  const times=_lo('attTime');
+  const st=(att[todayKey]||{})[me.id];
+  const qrTime=(times[todayKey]||{})[me.id];
+  const now=new Date();
+  const refreshStr=`${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')} 기준`;
+
+  const stMap={
+    att:{label:'출석',icon:'✅',cls:'status-att',color:'var(--green)'},
+    abs:{label:'결석',icon:'❌',cls:'status-abs',color:'var(--red)'},
+    late:{label:'지각',icon:'⚠️',cls:'status-late',color:'var(--amber)'},
+  };
+  const info=stMap[st]||{label:'미기록',icon:'📋',cls:'status-none',color:'var(--text3)'};
+
+  const card=document.getElementById('today-att-card');
+  card.className=`today-att-card ${info.cls}`;
+  card.innerHTML=`
+    <div class="today-att-top">
+      <span class="today-att-label">🗓 오늘 (${today}) 출결 현황</span>
+      <span class="today-att-refresh">🔄 ${refreshStr}</span>
+    </div>
+    <div class="today-att-main">
+      <span class="today-att-icon">${info.icon}</span>
+      <div>
+        <div class="today-att-status" style="color:${info.color}">${info.label}</div>
+        <div class="today-att-sub">${qrTime?'QR 출석 시간: '+qrTime:'QR 출석 미기록'}</div>
+      </div>
+      ${qrTime?`<span class="today-att-time" style="color:${info.color}">${qrTime}</span>`:''}
+    </div>`;
+}
+
+// ── 배지 ──
+function renderBadges(){
+  if(!me)return;
+  const myBadges=_l('studentBadges').filter(b=>b.studentId===me.id);
+  const teachers=_l('teachers');
+  document.getElementById('badge-total').textContent=myBadges.length+'개';
+  const grid=document.getElementById('badge-grid');
+  if(!myBadges.length){
+    grid.innerHTML=`<div class="empty-state" style="grid-column:1/-1"><span class="empty-icon">🏅</span><div class="empty-text">아직 받은 배지가 없어요</div></div>`;
+    return;
+  }
+  grid.innerHTML=[...myBadges].sort((a,b)=>(b.date||'').localeCompare(a.date||'')).map(b=>{
+    const def=BADGE_DEFS.find(d=>d.id===b.badgeId)||{icon:'🏅',name:'배지',color:'#8896b8',bg:'var(--bg3)',desc:''};
+    const teacher=teachers.find(t=>t.id===b.teacherId);
+    return `<div class="badge-card" style="border-color:${def.color}50">
+      <div class="badge-icon-wrap" style="background:${def.bg}">${def.icon}</div>
+      <div class="badge-name" style="color:${def.color}">${def.name}</div>
+      <div class="badge-desc">${def.desc}</div>
+      ${b.note?`<div class="badge-note">"${b.note}"</div>`:''}
+      <div class="badge-date">${b.date||''}</div>
+    </div>`;
+  }).join('');
+}
+
+// ── 학업 진도 ──
+function renderProgress(){
+  if(!me)return;
+  const scores=_l('scores').filter(s=>s.studentId===me.id);
+  const cls=_l('classes').find(c=>c.id===me.classId);
+  const t=_l('teachers').find(x=>x.id===(cls||{}).teacherId);
+
+  // 진도 요약
+  if(scores.length){
+    const avg=Math.round(scores.reduce((a,s)=>a+s.score,0)/scores.length);
+    const max=Math.max(...scores.map(s=>s.score));
+    document.getElementById('p-avg').textContent=avg;
+    document.getElementById('p-max').textContent=max;
+  }
+  document.getElementById('p-cnt').textContent=scores.length;
+
+  // 학생 상세
+  const dc=document.getElementById('detail-card');
+  dc.innerHTML=`
+    <div class="detail-row"><span class="detail-label">수업반</span><span class="detail-val">${cls?cls.name:'미배정'}</span></div>
+    <div class="detail-row"><span class="detail-label">레벨</span><span class="detail-val">${me.level||'-'}</span></div>
+    <div class="detail-row"><span class="detail-label">담당 강사</span><span class="detail-val">${t?t.name+' 선생님':'-'}</span></div>
+    <div class="detail-row"><span class="detail-label">수업 시간</span><span class="detail-val">${cls?cls.schedule||'-':'-'}</span></div>
+    <div class="detail-row"><span class="detail-label">등록일</span><span class="detail-val">${me.date||'-'}</span></div>`;
+
+  // 성적 목록
+  const sl=document.getElementById('score-list');
+  if(!scores.length){
+    sl.innerHTML=`<div class="empty-state"><span class="empty-icon">📝</span><div class="empty-text">평가 내역이 없습니다</div></div>`;
+    return;
+  }
+  sl.innerHTML=[...scores].sort((a,b)=>(b.date||'').localeCompare(a.date||'')).map(s=>{
+    const g=gradeLabel(s.score);
+    return `<div class="score-row">
+      <div><div class="score-name">${s.name}</div><div class="score-sub">${s.date||''}</div></div>
+      <div style="margin-left:auto;display:flex;align-items:center">
+        <span class="score-val" style="color:${g.c}">${s.score}</span>
+        <span class="grade-badge" style="background:${g.c}18;color:${g.c};border:1px solid ${g.c}30">${g.l}</span>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+// ── 공지사항 ──
+function renderAnn(){
+  if(!me)return;
+  const anns=_l('announcements').filter(a=>a.targetClass==='all'||a.targetClass===me.classId);
+  const classes=_l('classes');
+  const teachers=_l('teachers');
+  document.getElementById('ann-total').textContent=anns.length+'건';
+  const list=document.getElementById('ann-list');
+  if(!anns.length){
+    list.innerHTML=`<div class="empty-state"><span class="empty-icon">📢</span><div class="empty-text">공지사항이 없습니다</div></div>`;
+  } else {
+    list.innerHTML=[...anns].sort((a,b)=>(b.date||'').localeCompare(a.date||'')).map(a=>{
+      const cls=a.targetClass==='all'?null:(classes.find(c=>c.id===a.targetClass));
+      const t=teachers.find(x=>x.id===a.teacherId);
+      return `<div class="ann-card${a.important?' important':''}">
+        <div class="ann-head">
+          ${a.important?'<span class="ann-tag tag-important">🔴 중요</span>':'<span class="ann-tag tag-normal">일반</span>'}
+          ${cls?`<span class="ann-tag tag-class">${cls.name}</span>`:'<span class="ann-tag tag-class">전체</span>'}
+        </div>
+        <div class="ann-title">${a.title}</div>
+        <div class="ann-meta">${a.date||''} · ${t?t.name+' 선생님':'관리자'}</div>
+        <div class="ann-body">${a.content||''}</div>
+      </div>`;
+    }).join('');
+  }
+  renderMsgs();
+}
+
+// ── 학원 메시지 ──
+const MSG_TYPE_CLS={'출결 알림':'mtype-att','성적 통보':'mtype-score','납부 안내':'mtype-fee','상담 내용':'mtype-consult','공지':'mtype-notice','기타':'mtype-etc'};
+function renderMsgs(){
+  if(!me)return;
+  const msgs=_l('messages').filter(m=>m.studentId===me.id);
+  document.getElementById('msg-total').textContent=msgs.length+'건';
+  const list=document.getElementById('msg-list');
+  if(!msgs.length){
+    list.innerHTML=`<div class="empty-state"><span class="empty-icon">💬</span><div class="empty-text">학원에서 보낸 메시지가 없습니다</div></div>`;
+    return;
+  }
+  list.innerHTML=[...msgs].sort((a,b)=>(b.date||'').localeCompare(a.date||'')).map(m=>{
+    const tc=MSG_TYPE_CLS[m.type]||'mtype-etc';
+    return `<div class="msg-card">
+      <div class="ann-head">
+        <span class="msg-type-tag ${tc}">${m.type||'기타'}</span>
+        <span class="ann-meta" style="margin:0;margin-left:auto">${m.date||''}</span>
+      </div>
+      <div class="ann-body">${m.content||''}</div>
+    </div>`;
+  }).join('');
+}
+
+// ── 탭 전환 ──
+function showTab(name){
+  ['att','progress','hw','ann'].forEach(t=>{
+    document.getElementById('tab-'+t).style.display=t===name?'':'none';
+    document.getElementById('tab-'+t+'-btn').classList.toggle('active',t===name);
+  });
+  if(name==='progress')renderProgress();
+  if(name==='hw')renderHomework();
+  if(name==='ann')renderAnn();
+}
+
+// ── 숙제 ──
+function renderHomework(){
+  if(!me)return;
+  const hw=_l('homework').filter(h=>h.classId==='all'||h.classId===me.classId);
+  document.getElementById('hw-total').textContent=hw.length+'개';
+  const list=document.getElementById('hw-list');
+  if(!hw.length){
+    list.innerHTML='<div class="empty-state"><span class="empty-icon">📚</span><div class="empty-text">등록된 숙제가 없습니다<br>선생님이 숙제를 등록하면 여기에 표시됩니다</div></div>';
+    return;
+  }
+  list.innerHTML=[...hw].sort((a,b)=>(b.date||'').localeCompare(a.date||'')).map(h=>{
+    const isOverdue=h.dueDate&&h.dueDate<new Date().toISOString().split('T')[0];
+    return '<div class="hw-card">'
+      +'<div class="hw-card-title">'+h.title+'</div>'
+      +'<div class="hw-card-meta">'
+      +'<span>📅 등록: '+(h.date||'')+'</span>'
+      +(h.dueDate?'<span style="color:'+(isOverdue?'var(--red)':'var(--text3)')+'">⏰ 마감: '+h.dueDate+(isOverdue?' (기한 지남)':'')+'</span>':'')
+      +'</div>'
+      +(h.desc?'<div style="font-size:13px;color:var(--text2);line-height:1.7;margin-bottom:10px">'+h.desc+'</div>':'')
+      +(h.url?'<a class="hw-link-btn" href="'+h.url+'" target="_blank">📖 숙제 바로 하기</a>':'<span style="font-size:12px;color:var(--text3)">링크 없음</span>')
+      +'</div>';
+  }).join('');
+}
+
+// ── 초기화 ──
+(function(){
+  const savedId=sessionStorage.getItem('ds_parent_student_id');
+  if(savedId){
+    const s=_l('students').find(x=>x.id===savedId);
+    if(s){me=s;enterApp();return;}
+  }
+  initLogin();
+})();
+</script>
+</body>
+</html>

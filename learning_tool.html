@@ -1,0 +1,1013 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DS English · 영어 학습 도구</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;600;700&family=DM+Mono:wght@400;500&family=Lora:ital,wght@0,400;0,600;1,400&display=swap');
+*{margin:0;padding:0;box-sizing:border-box}
+:root{
+  --bg:#f5f7fb;--bg2:#ffffff;--bg3:#f0f2f8;--bg4:#e8ecf5;
+  --border:#dde3f0;--border2:#c9d1e8;
+  --text:#1a2035;--text2:#4a5577;--text3:#8896b8;
+  --accent:#4f8ef7;--accent2:#3a6fd4;--glow:rgba(79,142,247,0.12);
+  --green:#1a9e6a;--gbg:rgba(26,158,106,0.1);
+  --amber:#c87a0d;--abg:rgba(200,122,13,0.1);
+  --red:#d63850;--rbg:rgba(214,56,80,0.1);
+  --purple:#7c5cfc;--pbg:rgba(124,92,252,0.1);
+  --teal:#0891b2;
+  --r:10px;--rlg:14px;
+  --font:'Noto Sans KR',sans-serif;--mono:'DM Mono',monospace;--serif:'Lora',serif;
+}
+body{background:var(--bg);color:var(--text);font-family:var(--font);font-size:14px;min-height:100vh}
+
+.topbar{background:var(--bg2);border-bottom:1px solid var(--border);padding:0 28px;height:58px;display:flex;align-items:center;gap:14px;position:sticky;top:0;z-index:50}
+.logo-icon{width:32px;height:32px;background:linear-gradient(135deg,#4f8ef7,#7c5cfc);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:800;color:#fff;flex-shrink:0}
+.logo-text{font-size:14px;font-weight:700;color:var(--text)}
+.sep{color:var(--border2);font-size:18px}
+.page-ttl{font-size:14px;font-weight:600;color:var(--text2)}
+.back-btn{margin-left:auto;background:var(--bg3);border:1px solid var(--border);border-radius:8px;padding:6px 13px;color:var(--text2);font-size:12px;font-weight:500;cursor:pointer;transition:all .15s}
+.back-btn:hover{background:var(--bg4);color:var(--text)}
+
+.main{max-width:1380px;margin:0 auto;padding:22px 28px}
+
+/* input */
+.input-card{background:var(--bg2);border:1px solid var(--border);border-radius:var(--rlg);padding:18px 22px;margin-bottom:18px}
+.input-row{display:flex;align-items:center;gap:10px;margin-bottom:12px}
+.input-label{font-size:13px;font-weight:600;color:var(--text)}
+.word-cnt{font-size:12px;color:var(--text3);font-family:var(--mono);margin-left:4px}
+.article-ta{width:100%;min-height:150px;background:var(--bg3);border:1px solid var(--border);border-radius:10px;padding:14px 16px;color:var(--text);font-size:14px;line-height:1.85;font-family:var(--serif);outline:none;resize:vertical;transition:border-color .15s}
+.article-ta:focus{border-color:var(--accent)}
+.article-ta::placeholder{color:var(--text3);font-family:var(--font)}
+.ctrl-row{display:flex;align-items:center;gap:8px;margin-top:10px}
+.level-sel{background:var(--bg3);border:1px solid var(--border);border-radius:8px;padding:7px 10px;color:var(--text2);font-size:12px;font-family:var(--font);outline:none}
+.level-sel:focus{border-color:var(--accent)}
+
+/* buttons */
+.btn{display:inline-flex;align-items:center;gap:6px;padding:7px 14px;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;border:none;font-family:var(--font);transition:all .15s}
+.btn-primary{background:var(--accent);color:#fff}.btn-primary:hover{background:var(--accent2)}
+.btn-primary:disabled{opacity:.5;cursor:not-allowed}
+.btn-ghost{background:transparent;color:var(--text2);border:1px solid var(--border)}.btn-ghost:hover{background:var(--bg3);color:var(--text)}
+.btn-green{background:var(--gbg);color:var(--green);border:1px solid rgba(62,207,142,.25)}.btn-green:hover{background:rgba(62,207,142,.2)}
+.btn-sm{padding:5px 11px;font-size:12px}
+.ml-auto{margin-left:auto}
+
+/* progress */
+.prog-bar{height:3px;background:var(--bg3);border-radius:3px;overflow:hidden;margin-bottom:4px}
+.prog-fill{height:100%;background:linear-gradient(90deg,var(--accent),var(--green));border-radius:3px;transition:width .3s}
+.prog-label{font-size:11px;color:var(--text3);text-align:center;margin-bottom:14px}
+
+/* tabs */
+.tabs-bar{display:flex;gap:2px;background:var(--bg3);padding:4px;border-radius:11px;margin-bottom:18px;border:1px solid var(--border);width:fit-content}
+.tab{padding:7px 18px;border-radius:8px;cursor:pointer;font-size:13px;font-weight:500;color:var(--text3);transition:all .15s;display:flex;align-items:center;gap:5px}
+.tab.active{background:var(--bg2);color:var(--text);box-shadow:0 1px 4px rgba(30,40,80,.08)}
+.tab-content{display:none}.tab-content.active{display:block}
+
+/* summary strip */
+.sum-strip{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:20px}
+.s-card{background:var(--bg2);border:1px solid var(--border);border-radius:var(--r);padding:13px 16px;position:relative;overflow:hidden}
+.s-card::before{content:'';position:absolute;top:0;left:0;right:0;height:2px}
+.s-card.c1::before{background:var(--accent)}.s-card.c2::before{background:var(--green)}
+.s-card.c3::before{background:var(--amber)}.s-card.c4::before{background:var(--purple)}
+.s-lbl{font-size:10px;font-weight:600;color:var(--text3);letter-spacing:.05em;text-transform:uppercase;margin-bottom:4px}
+.s-val{font-size:22px;font-weight:700;font-family:var(--mono);color:var(--text)}
+.s-sub{font-size:11px;color:var(--text3);margin-top:2px}
+
+/* article annotated */
+.article-view{background:var(--bg2);border:1px solid var(--border);border-radius:var(--rlg);padding:22px 26px;line-height:2.1;font-size:15px;font-family:var(--serif);color:var(--text2)}
+.article-view p{margin-bottom:14px}
+.kw{cursor:pointer;border-bottom:2px solid;border-radius:2px;transition:background .12s;padding:0 1px}
+.kw.in-dict{border-color:var(--green);color:var(--green)}.kw.in-dict:hover{background:var(--gbg)}
+.kw.found{border-color:var(--amber);color:var(--amber)}.kw.found:hover{background:var(--abg)}
+.kw.manual{border-color:var(--purple);color:var(--purple)}.kw.manual:hover{background:var(--pbg)}
+.legend{display:flex;gap:14px;margin-bottom:12px;font-size:12px;color:var(--text3);flex-wrap:wrap}
+.leg{display:flex;align-items:center;gap:5px}
+.leg-line{width:16px;height:2px;border-radius:2px}
+
+/* vocab table */
+.vtable-wrap{background:var(--bg2);border:1px solid var(--border);border-radius:var(--rlg);overflow:hidden}
+table{width:100%;border-collapse:collapse}
+thead tr{background:var(--bg3)}
+th{padding:10px 14px;text-align:left;font-size:11px;font-weight:600;color:var(--text3);letter-spacing:.05em;text-transform:uppercase;border-bottom:1px solid var(--border)}
+td{padding:10px 14px;font-size:13px;color:var(--text2);border-bottom:1px solid var(--border);vertical-align:top}
+tr:last-child td{border-bottom:none}
+tbody tr:hover{background:var(--bg3)}
+.w-en{font-weight:700;color:var(--text);font-size:14px}
+.w-pron{font-size:11px;color:var(--text3);font-family:var(--mono);margin-top:1px}
+.pos-badge{display:inline-block;padding:1px 8px;border-radius:20px;font-size:10px;font-weight:600}
+.pos-n{background:rgba(34,211,238,.1);color:var(--teal);border:1px solid rgba(34,211,238,.2)}
+.pos-v{background:var(--gbg);color:var(--green);border:1px solid rgba(62,207,142,.2)}
+.pos-adj{background:var(--abg);color:var(--amber);border:1px solid rgba(245,166,35,.2)}
+.pos-adv{background:var(--pbg);color:var(--purple);border:1px solid rgba(167,139,250,.2)}
+.pos-other{background:var(--bg4);color:var(--text3);border:1px solid var(--border)}
+.w-ko{color:var(--text);font-weight:600}
+.w-ex{font-size:12px;color:var(--text3);font-style:italic;margin-top:3px;font-family:var(--serif);line-height:1.5}
+.src-badge{font-size:10px;padding:1px 6px;border-radius:10px}
+.src-dict{background:var(--gbg);color:var(--green);border:1px solid rgba(62,207,142,.2)}
+.src-built{background:var(--glow);color:var(--accent);border:1px solid rgba(79,142,247,.2)}
+.src-manual{background:var(--pbg);color:var(--purple);border:1px solid rgba(167,139,250,.2)}
+
+/* vocab checkbox */
+.chk{width:15px;height:15px;accent-color:var(--accent);cursor:pointer}
+
+/* add word form */
+.add-word-bar{background:var(--bg3);border:1px solid var(--border);border-radius:10px;padding:12px 16px;margin-bottom:14px;display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.add-word-bar input,
+.add-word-bar select{background:var(--bg2);border:1px solid var(--border);border-radius:7px;padding:6px 10px;color:var(--text);font-size:13px;font-family:var(--font);outline:none;flex:1;min-width:80px}
+.add-word-bar input:focus{border-color:var(--accent)}
+
+/* test builder */
+.test-builder{background:var(--bg2);border:1px solid var(--border);border-radius:var(--rlg);padding:18px 22px;margin-bottom:18px}
+.t-opts{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:10px}
+.t-lbl{font-size:12px;color:var(--text2)}
+.t-num{background:var(--bg3);border:1px solid var(--border);border-radius:7px;padding:6px 10px;color:var(--text);font-size:13px;font-family:var(--mono);outline:none;width:70px}
+.t-num:focus{border-color:var(--accent)}
+.type-btn{padding:4px 12px;border-radius:7px;font-size:12px;font-weight:500;cursor:pointer;border:1px solid var(--border);background:transparent;color:var(--text3);font-family:var(--font);transition:all .15s}
+.type-btn.on{background:var(--glow);color:var(--accent);border-color:rgba(79,142,247,.3)}
+
+/* print sheet */
+.print-sheet{background:#fff;border-radius:var(--rlg);overflow:hidden;border:1px solid var(--border)}
+.ph{background:#1a2340;padding:20px 30px;color:#fff}
+.ph-title{font-size:20px;font-weight:700;margin-bottom:4px}
+.ph-meta{font-size:12px;opacity:.7;display:flex;gap:14px;flex-wrap:wrap}
+.pb{padding:22px 30px;color:#111;font-family:'Noto Sans KR',sans-serif}
+.ts{margin-bottom:26px}
+.ts-title{font-size:14px;font-weight:700;color:#1a2340;margin-bottom:12px;padding-bottom:5px;border-bottom:2px solid #1a2340}
+.ti{margin-bottom:12px}
+.tq{font-size:13.5px;font-weight:600;color:#111;line-height:1.7;margin-bottom:5px}
+.tq .blank{display:inline-block;min-width:80px;border-bottom:1px solid #333;margin:0 4px}
+.choices{display:grid;grid-template-columns:1fr 1fr;gap:4px;margin-left:18px;font-size:13px;color:#333;margin-top:4px}
+.ans-key{background:#f8f9ff;border:1px solid #dee2f0;border-radius:8px;padding:12px 18px;margin-top:14px}
+.ak-title{font-size:11px;font-weight:700;color:#1a2340;margin-bottom:8px;text-transform:uppercase;letter-spacing:.04em}
+.ak-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:5px;font-size:12px}
+.ak-item{display:flex;gap:3px}
+.ak-num{font-weight:700;color:#1a2340}
+
+/* tooltip */
+.tt{position:fixed;background:var(--bg3);border:1px solid var(--border2);border-radius:9px;padding:10px 14px;font-size:12px;color:var(--text);z-index:9999;pointer-events:none;max-width:280px;line-height:1.6;box-shadow:0 4px 16px rgba(30,40,80,.12);display:none}
+
+/* loading */
+.ld-wrap{padding:14px 0 8px}
+.ld-bar{height:3px;background:var(--bg3);border-radius:3px;overflow:hidden;margin-bottom:10px}
+.ld-fill{height:100%;background:linear-gradient(90deg,var(--accent),var(--green));border-radius:3px;transition:width .4s}
+
+/* empty */
+.empty{text-align:center;padding:40px 20px;color:var(--text3)}
+.empty-icon{font-size:32px;margin-bottom:10px;opacity:.35}
+
+/* section head */
+.sec-head{display:flex;align-items:center;gap:10px;margin-bottom:14px}
+.sec-title{font-size:14px;font-weight:600;color:var(--text)}
+.sec-cnt{font-size:12px;color:var(--text3);background:var(--bg3);padding:2px 10px;border-radius:20px;border:1px solid var(--border)}
+
+.hidden{display:none!important}
+
+@media print{
+  body{background:#fff}
+  .topbar,.input-card,.tabs-bar,.sum-strip,.test-builder,.no-print{display:none!important}
+  .print-sheet{border:none;border-radius:0}
+  .ph{background:#1a2340!important;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+  .tab-content{display:block!important}
+  @page{margin:16mm}
+}
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <img src="logo.jpg" style="width:32px;height:32px;border-radius:8px;object-fit:cover;flex-shrink:0" alt="DS English">
+  <span class="logo-text">DS English</span>
+  <span class="sep">›</span>
+  <span class="page-ttl">📖 영어 학습 도구</span>
+  <button class="back-btn" onclick="window.location.href='admin.html'">← 관리 시스템으로</button>
+</div>
+
+<div class="main">
+
+  <!-- INPUT -->
+  <div class="input-card">
+    <div class="input-row">
+      <span style="font-size:17px">📰</span>
+      <span class="input-label">영어 기사 / 텍스트 붙여넣기</span>
+      <span class="word-cnt" id="word-cnt">0 단어</span>
+      <select class="level-sel" id="level-sel">
+        <option value="초급">초급</option>
+        <option value="중급" selected>중급</option>
+        <option value="고급">고급</option>
+      </select>
+    </div>
+    <textarea class="article-ta" id="article-input"
+      placeholder="영어 기사, 교재, 뉴스 등을 붙여넣으세요..."
+      oninput="updateWC()"></textarea>
+    <div class="ctrl-row">
+      <button class="btn btn-ghost btn-sm" onclick="loadSample()">📄 샘플 기사</button>
+      <button class="btn btn-ghost btn-sm" onclick="clearAll()">🗑️ 지우기</button>
+      <button class="btn btn-primary ml-auto" id="analyze-btn" onclick="startAnalysis()">🔍 분석 시작</button>
+    </div>
+    <!-- progress -->
+    <div id="ld-area" class="hidden ld-wrap">
+      <div class="ld-bar"><div class="ld-fill" id="ld-fill" style="width:0%"></div></div>
+      <div class="prog-label" id="ld-msg">단어 추출 중...</div>
+    </div>
+  </div>
+
+  <!-- RESULTS -->
+  <div id="results" class="hidden">
+    <div class="sum-strip" id="sum-strip"></div>
+    <div class="tabs-bar no-print">
+      <div class="tab active" onclick="sw('annotated',this)">📄 본문 분석</div>
+      <div class="tab" onclick="sw('vocab',this)">📝 어휘 정리</div>
+      <div class="tab" onclick="sw('test',this)">🗒️ 단어 시험지</div>
+    </div>
+
+    <!-- 본문 분석 -->
+    <div class="tab-content active" id="tab-annotated">
+      <div class="legend">
+        <div class="leg"><div class="leg-line" style="background:var(--green)"></div>내장 사전 단어</div>
+        <div class="leg"><div class="leg-line" style="background:var(--amber)"></div>사전 조회 단어</div>
+        <div class="leg"><div class="leg-line" style="background:var(--purple)"></div>수동 추가 단어</div>
+        <span style="margin-left:auto;font-size:11px;color:var(--text3)">밑줄 단어 클릭 → 뜻 표시</span>
+      </div>
+      <div class="article-view" id="annotated-body"></div>
+    </div>
+
+    <!-- 어휘 정리 -->
+    <div class="tab-content" id="tab-vocab">
+      <div class="sec-head">
+        <div class="sec-title">어휘 목록</div>
+        <span class="sec-cnt" id="vocab-cnt">0개</span>
+        <div style="margin-left:auto;display:flex;gap:7px">
+          <button class="btn btn-ghost btn-sm" onclick="selAll(true)">전체 선택</button>
+          <button class="btn btn-ghost btn-sm" onclick="selAll(false)">전체 해제</button>
+          <button class="btn btn-ghost btn-sm" onclick="sortBy('alpha')">가나다순</button>
+          <button class="btn btn-ghost btn-sm" onclick="sortBy('pos')">품사순</button>
+          <button class="btn btn-green btn-sm" onclick="printVocab()">🖨️ 어휘표 인쇄</button>
+        </div>
+      </div>
+      <!-- Add word -->
+      <div class="add-word-bar" id="add-bar">
+        <span style="font-size:12px;color:var(--text3);white-space:nowrap">단어 직접 추가:</span>
+        <input id="add-word" placeholder="영어 단어" onkeydown="if(event.key==='Enter')lookupAndAdd()">
+        <input id="add-ko" placeholder="한국어 뜻 (자동 또는 직접 입력)">
+        <select id="add-pos" class="level-sel">
+          <option value="n">명사</option><option value="v">동사</option>
+          <option value="adj">형용사</option><option value="adv">부사</option><option value="phrase">구문</option>
+        </select>
+        <button class="btn btn-ghost btn-sm" onclick="lookupAndAdd()">🔍 조회 후 추가</button>
+        <button class="btn btn-ghost btn-sm" onclick="manualAdd()">+ 직접 추가</button>
+      </div>
+      <div class="vtable-wrap" id="vocab-table"></div>
+    </div>
+
+    <!-- 시험지 -->
+    <div class="tab-content" id="tab-test">
+      <div class="test-builder no-print">
+        <div style="font-size:14px;font-weight:600;color:var(--text);margin-bottom:12px">🗒️ 시험지 설정</div>
+        <div class="t-opts">
+          <span class="t-lbl">문항 수</span>
+          <input class="t-num" type="number" id="q-cnt" value="15" min="5" max="30">
+          <span class="t-lbl" style="margin-left:8px">유형</span>
+          <button class="type-btn on" id="tp-blank" onclick="togTp('blank',this)">빈칸 채우기</button>
+          <button class="type-btn on" id="tp-match" onclick="togTp('match',this)">영↔한 매칭</button>
+          <button class="type-btn on" id="tp-choice" onclick="togTp('choice',this)">객관식</button>
+          <span class="t-lbl" style="margin-left:8px;font-size:11px;color:var(--text3)" id="sel-cnt-lbl"></span>
+          <div style="margin-left:auto;display:flex;gap:7px">
+            <button class="btn btn-ghost btn-sm" onclick="buildTest()">🔄 생성</button>
+            <button class="btn btn-green btn-sm" onclick="doPrint()">🖨️ 인쇄</button>
+          </div>
+        </div>
+        <div style="font-size:11px;color:var(--text3)">* 어휘 정리 탭에서 ☑ 체크된 단어로 시험지가 만들어집니다</div>
+      </div>
+      <div class="print-sheet" id="print-sheet">
+        <div class="ph">
+          <div class="ph-title">DS English · 영어 어휘 시험</div>
+          <div class="ph-meta" id="test-meta"></div>
+        </div>
+        <div class="pb" id="test-body">
+          <div class="empty"><div class="empty-icon">📝</div><div>시험지 설정에서 "생성" 버튼을 누르세요</div></div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<div class="tt" id="tt"></div>
+
+<script>
+// ══════════════════════════════════════════
+// BUILT-IN ENGLISH → KOREAN DICTIONARY
+// Academic / News / Common words (~550개)
+// ══════════════════════════════════════════
+const DICT = {
+  // A
+  accelerate:'가속화하다',accumulate:'축적하다',accurate:'정확한',acknowledge:'인정하다',acquire:'취득하다',adapt:'적응하다',
+  address:'다루다/주소',advocate:'지지하다/옹호자',affect:'영향을 미치다',affirm:'확언하다',agency:'기관/대리',
+  aggravate:'악화시키다',allocate:'배분하다',alter:'변경하다',ambiguous:'모호한',analyze:'분석하다',
+  anticipate:'예상하다',apparent:'분명한',argue:'주장하다',arise:'발생하다',assert:'단언하다',
+  assess:'평가하다',assist:'지원하다',assume:'가정하다',attempt:'시도하다',attribute:'귀인하다/특성',
+  awareness:'인식/의식',
+  // B
+  bias:'편향/편견',benefit:'혜택/이득',capacity:'역량/용량',challenge:'도전/문제',
+  collaborate:'협력하다',comprehensive:'포괄적인',conflict:'갈등/충돌',consequence:'결과/영향',
+  considerable:'상당한',contribute:'기여하다',controversial:'논란이 있는',crisis:'위기',critical:'중요한/비판적인',
+  // C
+  claim:'주장하다/주장',community:'공동체',complex:'복잡한',conclude:'결론 짓다',
+  considerable:'상당한',consist:'구성되다',context:'맥락/상황',controversial:'논란의',
+  convince:'설득하다',corporate:'기업의',current:'현재의',
+  // D
+  debate:'논쟁하다/토론',decline:'감소하다/거절하다',define:'정의하다',demonstrate:'보여주다/시위',
+  depend:'의존하다',deploy:'배치하다/활용하다',despite:'~에도 불구하고',determine:'결정하다',
+  develop:'개발하다',discover:'발견하다',discuss:'논의하다',distinct:'뚜렷한/구별되는',
+  diversity:'다양성',dominate:'지배하다',
+  // E
+  economic:'경제적인',effectiveness:'효과성',efficient:'효율적인',emerge:'나타나다',
+  emphasize:'강조하다',enable:'가능하게 하다',encourage:'장려하다',enhance:'강화하다',
+  enormous:'거대한',ensure:'보장하다',environment:'환경',establish:'설립하다',
+  evaluate:'평가하다',evidence:'증거',evolve:'진화하다/발전하다',expand:'확장하다',
+  explicit:'명시적인',explore:'탐구하다',expose:'노출시키다',extensive:'광범위한',
+  // F
+  facilitate:'촉진하다',factor:'요인',feature:'특징',focus:'집중하다/초점',
+  force:'강제하다/힘',forecast:'예측하다',framework:'틀/체계',fundamental:'근본적인',
+  // G
+  generate:'생성하다',global:'세계적인',governance:'거버넌스/통치',growth:'성장',
+  // H
+  highlight:'강조하다',
+  // I
+  identify:'확인하다/식별하다',ignore:'무시하다',implement:'시행하다',imply:'암시하다',
+  impact:'영향/충격',improve:'개선하다',include:'포함하다',increase:'증가하다',
+  indicate:'나타내다',influence:'영향을 미치다',initiative:'이니셔티브/주도',
+  innovate:'혁신하다',institution:'기관',integrate:'통합하다',intense:'강렬한',
+  interpret:'해석하다',investigate:'조사하다',involve:'포함하다/관여하다',issue:'문제/발행',
+  // J
+  justify:'정당화하다',
+  // K
+  key:'핵심적인',knowledge:'지식',
+  // L
+  launch:'출시하다/시작하다',legislation:'법률',limit:'제한하다/한계',local:'지역의',
+  // M
+  maintain:'유지하다',major:'주요한',manage:'관리하다',mechanism:'메커니즘',
+  mitigate:'완화하다',modify:'수정하다',monitor:'모니터링하다',
+  // N
+  navigate:'탐색하다/헤쳐나가다',negative:'부정적인',
+  // O
+  observe:'관찰하다',obtain:'획득하다',occur:'발생하다',oppose:'반대하다',
+  overall:'전반적인',
+  // P
+  participate:'참여하다',perceive:'인식하다',perspective:'관점',policy:'정책',
+  potential:'잠재적인',predict:'예측하다',previous:'이전의',primarily:'주로',
+  principle:'원칙',process:'처리하다/과정',promote:'촉진하다/홍보하다',
+  propose:'제안하다',protect:'보호하다',provide:'제공하다',
+  // Q
+  question:'의문을 제기하다/질문',
+  // R
+  reduce:'줄이다',refer:'언급하다/참고하다',reflect:'반영하다',reform:'개혁',
+  regard:'~로 간주하다',regulate:'규제하다',rely:'의존하다',remain:'남아있다',
+  represent:'대표하다',require:'필요하다',research:'연구하다',resolve:'해결하다',
+  respond:'대응하다',reveal:'드러내다',risk:'위험',role:'역할',
+  // S
+  sector:'부문',seek:'추구하다',significant:'중요한/상당한',similar:'유사한',
+  situation:'상황',solution:'해결책',source:'출처',strategy:'전략',
+  structure:'구조',suggest:'제안하다',support:'지지하다/지원',sustain:'지속하다',
+  // T
+  target:'목표',technology:'기술',tension:'긴장',topic:'주제',transform:'변환하다',
+  trend:'추세',
+  // U
+  ultimately:'궁극적으로',undermine:'약화시키다',understand:'이해하다',
+  // V
+  vary:'다르다/변하다',vital:'필수적인',
+  // W-Z
+  widespread:'광범위한',
+  // Extended news vocab
+  administration:'행정부/관리',agreement:'합의/협정',annual:'연간의',
+  approach:'접근법',authority:'권위/당국',available:'이용 가능한',
+  base:'기반',basis:'근거',brief:'간략한',broad:'광범위한',
+  budget:'예산',capital:'자본/수도',central:'중심적인',
+  civil:'시민의',clear:'명확한',commitment:'약속/헌신',
+  common:'공통적인',complete:'완전한',concern:'우려',concern:'우려',
+  condition:'조건/상태',conference:'회의',constitutional:'헌법적인',
+  construction:'건설',contract:'계약',control:'통제하다',
+  data:'데이터',deal:'거래/합의',decision:'결정',
+  demand:'요구하다/수요',democratic:'민주적인',design:'설계하다',
+  digital:'디지털',direction:'방향',directly:'직접',
+  economic:'경제적인',election:'선거',energy:'에너지',
+  environment:'환경',essential:'필수적인',
+  failure:'실패',federal:'연방의',financial:'재정적인',
+  foreign:'외국의/대외',function:'기능하다/기능',
+  general:'일반적인',government:'정부',health:'건강',
+  human:'인간의',income:'수입/소득',independent:'독립적인',
+  individual:'개인',inflation:'인플레이션',information:'정보',
+  intelligence:'지능/정보',international:'국제적인',
+  investment:'투자',issue:'문제',
+  justice:'정의',labor:'노동',land:'토지/착륙하다',
+  law:'법률',leader:'지도자',level:'수준',
+  loss:'손실',material:'물질/재료',media:'미디어',
+  military:'군사의',model:'모델',national:'국가적인',
+  network:'네트워크',nuclear:'핵의/원자력',
+  official:'공식적인/관리',operation:'작전/운영',
+  order:'질서/명령',organization:'조직',party:'정당/파티',
+  patient:'환자/인내심 있는',peace:'평화',period:'기간',
+  political:'정치적인',population:'인구',power:'권력/힘',
+  president:'대통령',private:'민간의/사적인',
+  public:'공공의',rate:'비율/속도',region:'지역',
+  related:'관련된',relationship:'관계',release:'발표하다/방출',
+  report:'보고하다/보고서',response:'응답',result:'결과',
+  revenue:'수입/세수',review:'검토하다',rights:'권리',
+  safety:'안전',scale:'규모',security:'안보/보안',
+  service:'서비스',social:'사회적인',society:'사회',
+  standard:'기준/표준',state:'국가/상태',system:'시스템',
+  tax:'세금',term:'임기/용어',trade:'무역/거래',
+  traditional:'전통적인',treatment:'치료/대우',trust:'신뢰',
+  unit:'단위',value:'가치',
+  war:'전쟁',welfare:'복지',
+  // Additional academic
+  abstract:'추상적인',academic:'학문적인',access:'접근하다/접근',
+  achieve:'달성하다',adjacent:'인접한',aggregate:'집합적인',
+  albeit:'~이기는 하지만',allocation:'배분',alternative:'대안',
+  amendment:'수정/개정',analogous:'유사한',analytical:'분석적인',
+  annually:'매년',anticipation:'예상',apparent:'명백한',
+  arbitration:'중재',array:'배열/다수',artificial:'인공의',
+  autonomous:'자율적인',
+  bilateral:'양자간의',bonding:'결합',briefing:'브리핑',
+  calculation:'계산',capability:'능력',catalyst:'촉매',
+  chronological:'연대순의',citation:'인용',coalition:'연합',
+  coherent:'일관된',comparative:'비교적인',compatibility:'호환성',
+  competitive:'경쟁적인',composition:'구성',conceive:'구상하다',
+  concurrent:'동시의',consensus:'합의',constraint:'제약',
+  correlation:'상관관계',counterpart:'상대방',
+  deficit:'적자/결핍',deliberate:'의도적인',demographic:'인구통계학적',
+  denial:'부정',detection:'탐지',diagnostic:'진단적인',
+  dimension:'차원',diplomatic:'외교적인',disclosure:'공개',
+  discrimination:'차별',disposition:'성향',documentation:'문서화',
+  dominant:'지배적인',
+  elaborate:'상세히 설명하다',empirical:'경험적인',enforcement:'시행',
+  engagement:'참여/약속',estimate:'추정하다',
+  excerpt:'발췌',execution:'실행',exempt:'면제하다',
+  exhibition:'전시',expectation:'기대',expertise:'전문성',
+  explicit:'명시적인',
+  federal:'연방의',feasible:'실현 가능한',flexible:'유연한',
+  fluctuation:'변동',foundation:'재단/기초',
+  genuine:'진정한',gradient:'경사/기울기',guideline:'지침',
+  hypothesis:'가설',
+  implementation:'이행',incentive:'인센티브',
+  inconsistent:'일관성 없는',infrastructure:'인프라',
+  inherent:'내재된',innovation:'혁신',
+  legacy:'유산',legitimate:'정당한',
+  margin:'마진/여백',methodology:'방법론',
+  negligible:'무시할 수 있는',norm:'규범',
+  objective:'목표/객관적인',ongoing:'지속적인',
+  optimize:'최적화하다',orientation:'방향성',
+  parallel:'평행한',parameter:'매개변수',
+  perception:'인식',persistent:'지속적인',
+  phenomenon:'현상',policy:'정책',precedent:'선례',
+  preliminary:'예비적인',
+  procedure:'절차',proficiency:'능숙함',protocol:'프로토콜',
+  publication:'출판물',
+  qualified:'자격 있는',quantify:'정량화하다',
+  rationalize:'합리화하다',recruitment:'채용',
+  relevance:'관련성',reliability:'신뢰성',
+  resistance:'저항',revenue:'수익',
+  scenario:'시나리오',specification:'명세서',
+  subsequent:'이후의',supplement:'보완하다',
+  sustainable:'지속 가능한',synthesis:'합성/종합',
+  theoretical:'이론적인',threshold:'임계값',
+  timeline:'일정/연표',transparency:'투명성',
+  underlying:'근본적인',uniform:'균일한',
+  validity:'유효성',variable:'변수/가변적인',
+  versatile:'다재다능한',virtually:'사실상',
+  voluntary:'자발적인',vulnerable:'취약한',
+  yield:'산출하다/수익률',unprecedented:'전례 없는',
+  perpetuate:'영속시키다',sophisticated:'정교한',proponent:'지지자',
+  momentum:'모멘텀/추진력',grapple:'씨름하다',regulate:'규제하다',
+  accountable:'책임감 있는',diagnose:'진단하다',personalized:'개인화된',
+  profoundly:'깊이',inequality:'불평등',flawed:'결함 있는',
+  dataset:'데이터셋',
+};
+
+// Common English words to skip (not vocab candidates)
+const STOPWORDS = new Set([
+  'the','a','an','and','or','but','in','on','at','to','for','of','with','by',
+  'from','up','about','into','through','during','before','after','above','below',
+  'is','are','was','were','be','been','being','have','has','had','do','does','did',
+  'will','would','could','should','may','might','shall','can','must','need',
+  'that','this','these','those','what','which','who','when','where','why','how',
+  'i','you','he','she','it','we','they','me','him','her','us','them',
+  'my','your','his','its','our','their','mine','yours','ours',
+  'not','no','nor','so','yet','both','either','neither',
+  'more','most','such','as','if','than','then','there','here',
+  'all','each','every','any','some','few','many','much','other',
+  'new','old','good','great','big','small','first','last','long','little',
+  'own','same','right','next','early','young','important','large','high',
+  'people','time','year','years','way','day','man','woman','men','women',
+  'world','life','hand','part','place','case','week','company','system',
+  'said','also','just','even','back','well','still','between','however',
+  'among','while','where','since','until','although','because','whether',
+  'its','over','under','only','out','off','again','further','once',
+  'very','now','like','see','make','know','take','come','get',
+  'give','use','find','think','tell','become','leave','call','keep','let',
+  'begin','show','hear','play','run','move','live','believe','hold',
+  'bring','happen','write','provide','sit','stand','lose','pay','meet',
+  'include','continue','set','learn','change','lead','understand','watch',
+  'follow','stop','create','speak','read','spend','grow','open','walk',
+  'win','offer','remember','love','consider','appear','buy','wait',
+  'serve','die','send','expect','build','stay','fall','cut','reach',
+  'kill','remain','suggest','raise','pass','sell','require','report',
+  'decide','pull','break','usually','often','always','sometimes','never',
+  'already','again','quite','rather','really','too','very','perhaps',
+  'probably','maybe','actually','especially','particularly','generally',
+  'recently','simply','directly','quickly','really','s','t','re','ll','ve','d','m',
+]);
+
+// ── STATE ──
+let vocabList = [];     // [{word, pron, pos, ko, example, source, checked}]
+let rawText = '';
+let testTypes = {blank:true, match:true, choice:true};
+let currentArticle = '';
+
+// ── INPUT ──
+function updateWC(){
+  const t = document.getElementById('article-input').value.trim();
+  document.getElementById('word-cnt').textContent = (t ? t.split(/\s+/).length : 0) + ' 단어';
+}
+function loadSample(){
+  document.getElementById('article-input').value = `Artificial intelligence is rapidly transforming the way we work, learn, and communicate. From sophisticated language models that can generate human-like text to computer vision systems that diagnose medical conditions, AI technologies are becoming increasingly integrated into our daily lives.
+
+However, this unprecedented technological advancement raises profound questions about privacy, employment, and the ethical use of data. Critics argue that AI systems can perpetuate existing biases and inequalities if they are trained on flawed datasets.
+
+Proponents, on the other hand, emphasize the enormous potential benefits: improved healthcare diagnostics, personalized education, and solutions to complex global challenges such as climate change.
+
+The debate surrounding AI regulation has gained momentum as governments around the world grapple with how to balance innovation with public safety. Experts suggest that transparent, accountable AI governance frameworks are essential to ensure that these technologies serve the greater good.`;
+  updateWC();
+}
+function clearAll(){
+  document.getElementById('article-input').value = '';
+  updateWC();
+  document.getElementById('results').classList.add('hidden');
+  vocabList = [];
+}
+
+// ── TAB SWITCH ──
+function sw(name, el){
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+  document.querySelectorAll('.tab-content').forEach(t=>t.classList.remove('active'));
+  el.classList.add('active');
+  document.getElementById('tab-'+name).classList.add('active');
+  if(name==='test') updateSelCntLabel();
+}
+function togTp(tp, btn){
+  testTypes[tp] = !testTypes[tp];
+  btn.classList.toggle('on', testTypes[tp]);
+}
+
+// ── ANALYSIS ──
+async function startAnalysis(){
+  const text = document.getElementById('article-input').value.trim();
+  if(!text || text.length < 30){ alert('30자 이상의 영어 텍스트를 입력해주세요.'); return; }
+  currentArticle = text;
+  document.getElementById('analyze-btn').disabled = true;
+  document.getElementById('ld-area').classList.remove('hidden');
+  document.getElementById('results').classList.add('hidden');
+
+  setProgress(10, '단어 추출 중...');
+  await sleep(100);
+
+  // 1. Extract candidate words from text
+  const words = extractCandidates(text);
+  setProgress(30, `${words.length}개 후보 단어 발견...`);
+  await sleep(100);
+
+  // 2. Match against built-in dict
+  const found = [];
+  const lookupNeeded = [];
+  for(const w of words){
+    const lw = w.toLowerCase();
+    if(DICT[lw]){
+      found.push({word:lw, pron:'', pos:guessPOS(lw), ko:DICT[lw], example:'', source:'built'});
+    } else {
+      lookupNeeded.push(lw);
+    }
+  }
+  setProgress(50, `내장 사전: ${found.length}개 / 온라인 조회: ${lookupNeeded.length}개...`);
+  await sleep(80);
+
+  // 3. Free dictionary API lookup for remaining words
+  const apiResults = await lookupBatch(lookupNeeded.slice(0,15), setProgress);
+  setProgress(90, '결과 정리 중...');
+  await sleep(100);
+
+  // Merge
+  const all = [...found, ...apiResults];
+  // Deduplicate
+  const seen = new Set();
+  vocabList = all.filter(v=>{ if(seen.has(v.word)) return false; seen.add(v.word); return true; })
+    .map(v=>({...v, checked:true}));
+
+  setProgress(100, '완료!');
+  await sleep(200);
+
+  renderResults(text);
+  document.getElementById('ld-area').classList.add('hidden');
+  document.getElementById('results').classList.remove('hidden');
+  document.getElementById('analyze-btn').disabled = false;
+}
+
+function setProgress(pct, msg){
+  document.getElementById('ld-fill').style.width = pct+'%';
+  document.getElementById('ld-msg').textContent = msg;
+}
+function sleep(ms){ return new Promise(r=>setTimeout(r,ms)); }
+
+// ── EXTRACT CANDIDATES ──
+function extractCandidates(text){
+  const tokenized = text.toLowerCase().match(/\b[a-z]{4,}\b/g) || [];
+  const freq = {};
+  tokenized.forEach(w=>{ if(!STOPWORDS.has(w)) freq[w]=(freq[w]||0)+1; });
+  // Sort by frequency desc, take top 40
+  const sorted = Object.keys(freq).sort((a,b)=>freq[b]-freq[a]);
+  // Prioritize words in DICT, then others
+  const inDict = sorted.filter(w=>DICT[w]);
+  const notInDict = sorted.filter(w=>!DICT[w]);
+  // Combined: all dict words + up to 15 non-dict
+  return [...inDict, ...notInDict.slice(0,15)].slice(0,40);
+}
+
+// ── FREE DICTIONARY API ──
+async function lookupBatch(words, progressCb){
+  const results = [];
+  for(let i=0; i<words.length; i++){
+    const w = words[i];
+    try{
+      const r = await fetch(`https://api.dictionaryapi.dev/api/v2/entries/en/${w}`);
+      if(!r.ok) continue;
+      const data = await r.json();
+      if(!Array.isArray(data) || !data[0]) continue;
+      const entry = data[0];
+      const meanings = entry.meanings||[];
+      const pos = meanings[0]?.partOfSpeech || 'other';
+      const def = meanings[0]?.definitions[0]?.definition || '';
+      const example = meanings[0]?.definitions[0]?.example || '';
+      const pron = entry.phonetics?.find(p=>p.text)?.text || '';
+      results.push({
+        word: w,
+        pron,
+        pos: normPOS(pos),
+        ko: def,   // English def (no Korean API available w/o key)
+        example,
+        source: 'api'
+      });
+    } catch(e){ /* skip */ }
+    if(progressCb) progressCb(50 + Math.round((i/words.length)*35), `사전 조회 중... (${i+1}/${words.length})`);
+    await sleep(60); // avoid rate limit
+  }
+  return results;
+}
+
+async function lookupSingle(word){
+  try{
+    const r = await fetch(`https://api.dictionaryapi.dev/api/v2/entries/en/${word}`);
+    if(!r.ok) return null;
+    const data = await r.json();
+    if(!Array.isArray(data)||!data[0]) return null;
+    const entry = data[0];
+    const meanings = entry.meanings||[];
+    const pos = meanings[0]?.partOfSpeech||'other';
+    const def = meanings[0]?.definitions[0]?.definition||'';
+    const ex = meanings[0]?.definitions[0]?.example||'';
+    const pron = entry.phonetics?.find(p=>p.text)?.text||'';
+    return {word, pron, pos:normPOS(pos), ko:def, example:ex, source:'api'};
+  } catch(e){ return null; }
+}
+
+function normPOS(p){
+  if(!p) return 'other';
+  p=p.toLowerCase();
+  if(p.includes('noun')) return 'n';
+  if(p.includes('verb')) return 'v';
+  if(p.includes('adjective')) return 'adj';
+  if(p.includes('adverb')) return 'adv';
+  return 'other';
+}
+function guessPOS(w){
+  if(w.endsWith('tion')||w.endsWith('ment')||w.endsWith('ness')||w.endsWith('ity')||w.endsWith('ty')) return 'n';
+  if(w.endsWith('ate')||w.endsWith('ize')||w.endsWith('ify')||w.endsWith('en')) return 'v';
+  if(w.endsWith('ful')||w.endsWith('less')||w.endsWith('ous')||w.endsWith('ive')||w.endsWith('al')) return 'adj';
+  if(w.endsWith('ly')) return 'adv';
+  return 'n';
+}
+
+// ── RENDER ──
+function renderResults(text){
+  // Summary strip
+  const inDict = vocabList.filter(v=>v.source==='built').length;
+  const fromApi = vocabList.filter(v=>v.source==='api').length;
+  const words = text.trim().split(/\s+/).length;
+  document.getElementById('sum-strip').innerHTML=`
+    <div class="s-card c1"><div class="s-lbl">단어 수</div><div class="s-val">${words}</div><div class="s-sub">전체 단어</div></div>
+    <div class="s-card c2"><div class="s-lbl">내장 사전</div><div class="s-val">${inDict}</div><div class="s-sub">즉시 한국어 뜻</div></div>
+    <div class="s-card c3"><div class="s-lbl">온라인 조회</div><div class="s-val">${fromApi}</div><div class="s-sub">영어 정의</div></div>
+    <div class="s-card c4"><div class="s-lbl">총 어휘</div><div class="s-val">${vocabList.length}</div><div class="s-sub">학습 단어</div></div>`;
+
+  renderAnnotated(text);
+  renderVocabTable();
+  buildTest();
+}
+
+// ── ANNOTATED TEXT ──
+function renderAnnotated(text){
+  const vocabSet = {};
+  vocabList.forEach(v=>{ vocabSet[v.word]={ko:v.ko, source:v.source}; });
+
+  const paras = text.split(/\n\s*\n/);
+  const html = paras.map(p=>{
+    if(!p.trim()) return '';
+    const escaped = p.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+    const annotated = escaped.replace(/\b([a-zA-Z]{4,})\b/g,(match)=>{
+      const lw = match.toLowerCase();
+      const entry = vocabSet[lw];
+      if(!entry) return match;
+      const cls = entry.source==='built'?'in-dict':entry.source==='api'?'found':'manual';
+      const tip = (entry.ko||'').replace(/'/g,"&#39;");
+      return `<span class="kw ${cls}" onclick="showTip(event,'${lw}','${tip}')">${match}</span>`;
+    });
+    return `<p>${annotated}</p>`;
+  }).join('');
+  document.getElementById('annotated-body').innerHTML = html;
+}
+
+// ── TOOLTIP ──
+function showTip(e, word, meaning){
+  const tt = document.getElementById('tt');
+  tt.innerHTML = `<b style="color:var(--green)">${word}</b><br><span style="color:var(--text2)">${meaning||'(영어 정의 참고)'}</span>`;
+  tt.style.display='block';
+  tt.style.left=(e.pageX+14)+'px';
+  tt.style.top=(e.pageY-6)+'px';
+  setTimeout(()=>tt.style.display='none',2800);
+  e.stopPropagation();
+}
+document.addEventListener('click',()=>document.getElementById('tt').style.display='none');
+
+// ── VOCAB TABLE ──
+function renderVocabTable(){
+  document.getElementById('vocab-cnt').textContent = vocabList.length+'개';
+  updateSelCntLabel();
+  if(!vocabList.length){
+    document.getElementById('vocab-table').innerHTML=`<div class="empty"><div class="empty-icon">📝</div><div>어휘가 없습니다</div></div>`;
+    return;
+  }
+  const posLabel={n:'명사',v:'동사',adj:'형용사',adv:'부사',other:'기타',phrase:'구문'};
+  const posCls={n:'pos-n',v:'pos-v',adj:'pos-adj',adv:'pos-adv',other:'pos-other',phrase:'pos-other'};
+  const srcBadge={built:'<span class="src-badge src-built">내장</span>',api:'<span class="src-badge src-dict">사전</span>',manual:'<span class="src-badge src-manual">수동</span>'};
+  let html=`<table><thead><tr>
+    <th style="width:36px"><input type="checkbox" class="chk" id="chk-all" onchange="selAllChk(this.checked)" title="전체 선택"></th>
+    <th>단어</th><th>발음</th><th>품사</th><th>뜻 (한국어 / 영어 정의)</th><th>예문</th><th>출처</th><th style="width:60px">삭제</th>
+  </tr></thead><tbody>`;
+  vocabList.forEach((v,i)=>{
+    html+=`<tr>
+      <td><input type="checkbox" class="chk row-chk" data-i="${i}" ${v.checked?'checked':''} onchange="toggleChk(${i},this.checked)"></td>
+      <td><div class="w-en">${v.word}</div></td>
+      <td><span style="font-family:var(--mono);font-size:11px;color:var(--text3)">${v.pron||'-'}</span></td>
+      <td><span class="pos-badge ${posCls[v.pos]||'pos-other'}">${posLabel[v.pos]||v.pos||'-'}</span></td>
+      <td>
+        <div class="w-ko" contenteditable="true" onblur="editKo(${i},this.textContent)" title="클릭하여 수정">${v.ko||''}</div>
+      </td>
+      <td><div class="w-ex">${v.example||''}</div></td>
+      <td>${srcBadge[v.source]||''}</td>
+      <td><button style="background:none;border:none;color:var(--red);cursor:pointer;font-size:13px" onclick="removeVocab(${i})">✕</button></td>
+    </tr>`;
+  });
+  html+='</tbody></table>';
+  document.getElementById('vocab-table').innerHTML=html;
+  // sync all-checkbox
+  document.getElementById('chk-all').checked = vocabList.every(v=>v.checked);
+}
+
+function toggleChk(i, val){ vocabList[i].checked=val; updateSelCntLabel(); }
+function selAll(v){ vocabList.forEach(x=>x.checked=v); renderVocabTable(); }
+function selAllChk(v){ selAll(v); }
+function editKo(i, val){ vocabList[i].ko = val.trim(); }
+function removeVocab(i){ vocabList.splice(i,1); renderVocabTable(); renderAnnotated(currentArticle); }
+function sortBy(mode){
+  if(mode==='alpha') vocabList.sort((a,b)=>a.word.localeCompare(b.word));
+  if(mode==='pos') vocabList.sort((a,b)=>(a.pos||'').localeCompare(b.pos||''));
+  renderVocabTable();
+}
+function updateSelCntLabel(){
+  const n = vocabList.filter(v=>v.checked).length;
+  const el = document.getElementById('sel-cnt-lbl');
+  if(el) el.textContent = `(선택: ${n}개)`;
+}
+
+// ── ADD WORD ──
+async function lookupAndAdd(){
+  const word = document.getElementById('add-word').value.trim().toLowerCase();
+  if(!word){ alert('단어를 입력하세요.'); return; }
+  if(vocabList.find(v=>v.word===word)){ alert('이미 목록에 있는 단어입니다.'); return; }
+  // Check built-in dict
+  if(DICT[word]){
+    vocabList.push({word, pron:'', pos:guessPOS(word), ko:DICT[word], example:'', source:'built', checked:true});
+    document.getElementById('add-word').value='';
+    renderVocabTable();
+    renderAnnotated(currentArticle);
+    return;
+  }
+  // Free API
+  const btn = event.target;
+  btn.disabled=true; btn.textContent='조회 중...';
+  const res = await lookupSingle(word);
+  btn.disabled=false; btn.textContent='🔍 조회 후 추가';
+  if(res){
+    const koInput = document.getElementById('add-ko').value.trim();
+    if(koInput) res.ko = koInput;
+    vocabList.push({...res, checked:true});
+    document.getElementById('add-word').value='';
+    document.getElementById('add-ko').value='';
+    renderVocabTable();
+    renderAnnotated(currentArticle);
+  } else {
+    alert('사전에서 찾을 수 없습니다. 직접 추가를 이용해주세요.');
+  }
+}
+
+function manualAdd(){
+  const word = document.getElementById('add-word').value.trim().toLowerCase();
+  const ko = document.getElementById('add-ko').value.trim();
+  const pos = document.getElementById('add-pos').value;
+  if(!word||!ko){ alert('단어와 뜻을 입력하세요.'); return; }
+  if(vocabList.find(v=>v.word===word)){ alert('이미 있는 단어입니다.'); return; }
+  vocabList.push({word, pron:'', pos, ko, example:'', source:'manual', checked:true});
+  document.getElementById('add-word').value='';
+  document.getElementById('add-ko').value='';
+  renderVocabTable();
+  renderAnnotated(currentArticle);
+}
+
+// ── TEST BUILDER ──
+function buildTest(){
+  const selected = vocabList.filter(v=>v.checked);
+  updateSelCntLabel();
+  if(!selected.length){
+    document.getElementById('test-body').innerHTML=`<div class="empty"><div class="empty-icon">📝</div><div>어휘 정리 탭에서 단어를 선택하세요</div></div>`;
+    return;
+  }
+  const maxQ = Math.min(parseInt(document.getElementById('q-cnt').value)||15, selected.length);
+  const level = document.getElementById('level-sel').value;
+  const now = new Date().toLocaleDateString('ko-KR');
+  document.getElementById('test-meta').innerHTML = `<span>${now}</span><span>${level} 레벨</span><span>선택 어휘 ${selected.length}개 기반</span>`;
+
+  // Shuffle
+  const pool = [...selected].sort(()=>Math.random()-0.5);
+  const activeTypes = Object.entries(testTypes).filter(([,v])=>v).map(([k])=>k);
+  if(!activeTypes.length){ alert('유형을 하나 이상 선택하세요.'); return; }
+
+  const perType = Math.ceil(maxQ / activeTypes.length);
+  let sections = [];
+  let idx = 0;
+  let qNum = 1;
+  const allAnswers = [];
+
+  if(testTypes.blank){
+    const items = pool.slice(idx, idx+perType); idx+=perType;
+    if(items.length){
+      let html=`<div class="ts"><div class="ts-title">Part ${sections.length+1}. 빈칸 채우기 — 한국어 뜻에 맞는 영어 단어를 쓰세요.</div>`;
+      items.forEach(v=>{
+        html+=`<div class="ti"><div class="tq"><span style="color:#888;font-weight:700;margin-right:5px">${qNum++}.</span>
+        <b style="color:#1a2340">${v.ko||v.word}</b> →&nbsp;<span class="blank"></span></div></div>`;
+        allAnswers.push({n:qNum-1, a:v.word});
+      });
+      html+='</div>';
+      sections.push(html);
+    }
+  }
+
+  if(testTypes.match){
+    const items = pool.slice(idx, idx+perType); idx+=perType;
+    if(items.length){
+      const shuffledKo = [...items].sort(()=>Math.random()-0.5);
+      const alpha = 'ⓐⓑⓒⓓⓔⓕⓖⓗⓘⓙⓚⓛⓜⓝⓞ';
+      let html=`<div class="ts"><div class="ts-title">Part ${sections.length+1}. 연결하기 — 영어와 한국어 뜻을 연결하세요.</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:0 40px;margin-left:16px">
+        <div><div style="font-size:11px;font-weight:700;color:#888;margin-bottom:6px">English</div>`;
+      const startQ = qNum;
+      items.forEach((v,i)=>{
+        html+=`<div style="padding:5px 0;font-size:13px"><span style="font-weight:700;color:#1a2340;margin-right:6px">${qNum++}.</span>${v.word}</div>`;
+        allAnswers.push({n:qNum-1, a:alpha[shuffledKo.findIndex(x=>x.word===v.word)]});
+      });
+      html+=`</div><div><div style="font-size:11px;font-weight:700;color:#888;margin-bottom:6px">Korean</div>`;
+      shuffledKo.forEach((v,i)=>{
+        html+=`<div style="padding:5px 0;font-size:13px"><span style="color:#1a2340;margin-right:6px">${alpha[i]}</span>${v.ko||v.word}</div>`;
+      });
+      html+=`</div></div><div style="margin-top:12px;display:flex;gap:8px;flex-wrap:wrap">`;
+      items.forEach((v,i)=>{
+        html+=`<span style="font-size:12px;font-weight:700;color:#1a2340">${startQ+i}.</span><span style="display:inline-block;width:26px;border-bottom:1px solid #888;margin-right:10px"></span>`;
+      });
+      html+=`</div></div>`;
+      sections.push(html);
+    }
+  }
+
+  if(testTypes.choice){
+    const items = pool.slice(idx); idx = pool.length;
+    if(items.length){
+      const allMeanings = selected.map(v=>v.ko||v.word);
+      let html=`<div class="ts"><div class="ts-title">Part ${sections.length+1}. 객관식 — 단어의 뜻으로 옳은 것을 고르세요.</div>`;
+      items.forEach(v=>{
+        const wrong = allMeanings.filter(m=>m!==v.ko).sort(()=>Math.random()-0.5).slice(0,3);
+        const choices = [v.ko||v.word, ...wrong].sort(()=>Math.random()-0.5);
+        const ans = ['①','②','③','④'][choices.indexOf(v.ko||v.word)];
+        html+=`<div class="ti">
+          <div class="tq"><span style="color:#888;font-weight:700;margin-right:5px">${qNum++}.</span>
+          <b>${v.word}</b><span style="font-size:11px;color:#888;margin-left:4px">${v.pron||''}</span></div>
+          <div class="choices">${choices.map((c,i)=>`<div>${'①②③④'[i]} ${c}</div>`).join('')}</div>
+        </div>`;
+        allAnswers.push({n:qNum-1, a:ans});
+      });
+      html+='</div>';
+      sections.push(html);
+    }
+  }
+
+  // Answer key
+  const akHtml = `<div class="ans-key"><div class="ak-title">정답</div>
+    <div class="ak-grid">${allAnswers.map(a=>`<div class="ak-item"><span class="ak-num">${a.n}.</span>${a.a}</div>`).join('')}</div>
+  </div>`;
+
+  document.getElementById('test-body').innerHTML=`
+    <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:14px">
+      <div style="font-size:12px;color:#555;line-height:2">
+        이름: <span style="display:inline-block;width:110px;border-bottom:1px solid #333"></span>&nbsp;
+        반: <span style="display:inline-block;width:70px;border-bottom:1px solid #333"></span>&nbsp;
+        날짜: <span style="display:inline-block;width:80px;border-bottom:1px solid #333"></span>
+      </div>
+      <div style="border:2px solid #1a2340;border-radius:6px;padding:6px 14px;text-align:center">
+        <div style="font-size:9px;color:#888;text-transform:uppercase">Score</div>
+        <div style="font-size:16px;font-weight:700;color:#1a2340">/ ${qNum-1}</div>
+      </div>
+    </div>
+    ${sections.join('')}
+    ${akHtml}`;
+}
+
+// ── PRINT ──
+function doPrint(){
+  const sheet = document.getElementById('print-sheet');
+  const w = window.open('','_blank','width=820,height=1160');
+  w.document.write(`<!DOCTYPE html><html><head><meta charset="UTF-8"><title>DS English 어휘 시험지</title>
+  <style>
+  @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;600;700&display=swap');
+  *{margin:0;padding:0;box-sizing:border-box}
+  body{font-family:'Noto Sans KR',sans-serif;background:#fff}
+  .ph{background:#1a2340;padding:20px 30px;color:#fff;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+  .ph-title{font-size:20px;font-weight:700;margin-bottom:4px}
+  .ph-meta{font-size:12px;opacity:.7;display:flex;gap:14px}
+  .pb{padding:22px 30px;color:#111}
+  .ts{margin-bottom:24px}
+  .ts-title{font-size:14px;font-weight:700;color:#1a2340;margin-bottom:12px;padding-bottom:5px;border-bottom:2px solid #1a2340}
+  .ti{margin-bottom:11px}
+  .tq{font-size:13.5px;font-weight:600;color:#111;line-height:1.7;margin-bottom:4px}
+  .blank{display:inline-block;min-width:80px;border-bottom:1px solid #333;margin:0 4px}
+  .choices{display:grid;grid-template-columns:1fr 1fr;gap:3px;margin-left:18px;font-size:13px;color:#333;margin-top:3px}
+  .ans-key{background:#f8f9ff;border:1px solid #dee2f0;border-radius:8px;padding:12px 18px;margin-top:14px}
+  .ak-title{font-size:11px;font-weight:700;color:#1a2340;margin-bottom:8px;text-transform:uppercase;letter-spacing:.04em}
+  .ak-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:5px;font-size:12px}
+  .ak-item{display:flex;gap:3px}
+  .ak-num{font-weight:700;color:#1a2340}
+  @page{margin:15mm}
+  </style></head><body>${sheet.outerHTML}</body></html>`);
+  w.document.close();
+  setTimeout(()=>{ w.focus(); w.print(); }, 500);
+}
+
+function printVocab(){
+  if(!vocabList.length){ alert('어휘가 없습니다.'); return; }
+  const level = document.getElementById('level-sel').value;
+  const posLabel={n:'명사',v:'동사',adj:'형용사',adv:'부사',other:'기타',phrase:'구문'};
+  const posColors={n:'#0891b2',v:'#059669',adj:'#d97706',adv:'#7c3aed',other:'#64748b',phrase:'#2563eb'};
+  const rows = vocabList.map(v=>`<tr>
+    <td style="font-weight:700;font-size:14px;color:#1a2340;padding:7px 12px">${v.word}</td>
+    <td style="font-family:monospace;font-size:11px;color:#64748b;padding:7px 12px">${v.pron||''}</td>
+    <td style="padding:7px 12px"><span style="background:${posColors[v.pos]||'#64748b'}22;color:${posColors[v.pos]||'#64748b'};border:1px solid ${posColors[v.pos]||'#64748b'}44;border-radius:20px;padding:1px 7px;font-size:11px;font-weight:600">${posLabel[v.pos]||'-'}</span></td>
+    <td style="font-weight:600;color:#111;padding:7px 12px;font-size:13px">${v.ko||''}</td>
+    <td style="font-size:12px;color:#555;font-style:italic;padding:7px 12px">${v.example||''}</td>
+  </tr>`).join('');
+  const html=`<!DOCTYPE html><html><head><meta charset="UTF-8"><title>어휘 목록</title>
+  <style>@import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;600;700&display=swap');
+  body{font-family:'Noto Sans KR',sans-serif;padding:20px}
+  h2{color:#1a2340;margin-bottom:8px}
+  .meta{font-size:12px;color:#64748b;margin-bottom:14px}
+  table{width:100%;border-collapse:collapse}
+  thead tr{background:#1a2340;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+  th{color:#fff;padding:9px 12px;text-align:left;font-size:11px;text-transform:uppercase;letter-spacing:.04em}
+  td{border-bottom:1px solid #e2e8f0}
+  tr:nth-child(even){background:#f8fafc}
+  @page{margin:15mm}</style></head>
+  <body><h2>DS English · 어휘 목록</h2>
+  <div class="meta">${new Date().toLocaleDateString('ko-KR')} &nbsp;|&nbsp; ${level} 레벨 &nbsp;|&nbsp; 총 ${vocabList.length}개</div>
+  <table><thead><tr><th>단어</th><th>발음</th><th>품사</th><th>뜻</th><th>예문</th></tr></thead>
+  <tbody>${rows}</tbody></table></body></html>`;
+  const w=window.open('','_blank');w.document.write(html);w.document.close();
+  setTimeout(()=>{w.focus();w.print();},500);
+}
+</script>
+</body>
+</html>
