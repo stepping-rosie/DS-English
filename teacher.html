@@ -379,6 +379,7 @@ tbody tr:hover{background:var(--bg3)}
       <table class="grade-tbl">
         <thead><tr>
           <th class="grade-th sname">이름</th>
+          <th class="grade-th">영역</th>
           <th class="grade-th">등급</th>
           <th class="grade-th" style="min-width:110px">메모</th>
           <th class="grade-th">기존 성적</th>
@@ -1111,7 +1112,7 @@ function renderGrades(){
   const classes=_l('classes');
   const tb=document.getElementById('grade-body');
   if(!students.length){
-    tb.innerHTML=`<tr><td colspan="4" class="grade-td" style="padding:20px;text-align:center;color:var(--text3)">학생이 없습니다</td></tr>`;
+    tb.innerHTML=`<tr><td colspan="5" class="grade-td" style="padding:20px;text-align:center;color:var(--text3)">학생이 없습니다</td></tr>`;
     return;
   }
   tb.innerHTML=students.map(s=>{
@@ -1119,9 +1120,17 @@ function renderGrades(){
     const existing=allScores.filter(sc=>sc.studentId===s.id&&sc.name===examType).sort((a,b)=>(b.date||'').localeCompare(a.date||''));
     const lastScore=existing[0];
     const lastGrade=lastScore?(lastScore.grade||gradeFromScore(lastScore.score)):'';
-    const lastLabel=lastScore?`${lastScore.date||''} ${lastGrade}`:'없음';
+    const lastLabel=lastScore?`${lastScore.date||''}${lastScore.domain?' ['+lastScore.domain+']':''} ${lastGrade}`:'없음';
     return `<tr>
       <td class="grade-td sname">${s.name}<br><span style="font-size:10px;color:var(--text3)">${cls?cls.name:''}</span></td>
+      <td class="grade-td">
+        <select class="grade-sel" id="gd-${s.id}" style="width:52px">
+          <option value="독해">독해</option>
+          <option value="어휘">어휘</option>
+          <option value="문법">문법</option>
+          <option value="쓰기">쓰기</option>
+        </select>
+      </td>
       <td class="grade-td">
         <select class="grade-sel" id="g-${s.id}" onchange="updateGradeColor('${s.id}')">
           <option value="">-</option>
@@ -1161,13 +1170,15 @@ function saveGrades(){
   let saved=0;
   students.forEach(s=>{
     const sel=document.getElementById('g-'+s.id);
+    const dsel=document.getElementById('gd-'+s.id);
     const memo=document.getElementById('gm-'+s.id);
     if(!sel||!sel.value)return;
     const grade=sel.value;
     const score=GRADE_MAP[grade]||0;
-    // 같은 날짜+시험 기존 레코드 제거 후 추가
-    const idx=SC.findIndex(sc=>sc.studentId===s.id&&sc.name===examType&&sc.date===dateVal);
-    const record={id:uid(),studentId:s.id,name:examType,score,grade,memo:memo?memo.value.trim():'',date:dateVal,teacherId:me.id};
+    const domain=dsel?dsel.value:'';
+    // 같은 날짜+시험+영역 기존 레코드 제거 후 추가
+    const idx=SC.findIndex(sc=>sc.studentId===s.id&&sc.name===examType&&sc.domain===domain&&sc.date===dateVal);
+    const record={id:uid(),studentId:s.id,name:examType,domain:domain,score,grade,memo:memo?memo.value.trim():'',date:dateVal,teacherId:me.id};
     if(idx>=0)SC[idx]=record;else SC.push(record);
     saved++;
   });

@@ -521,7 +521,7 @@ function renderProgress(){
   sl.innerHTML=[...scores].sort((a,b)=>(b.date||'').localeCompare(a.date||'')).map(s=>{
     const g=gradeLabel(s.score);
     return `<div class="score-row">
-      <div><div class="score-name">${s.name}</div><div class="score-sub">${s.date||''}</div></div>
+      <div><div class="score-name">${s.name}${s.domain?` <span style="font-size:10px;font-weight:600;padding:1px 6px;border-radius:6px;background:var(--bg3);color:var(--text3);border:1px solid var(--border);margin-left:4px">${s.domain}</span>`:''}</div><div class="score-sub">${s.date||''}</div></div>
       <div style="margin-left:auto;display:flex;align-items:center">
         <span class="score-val" style="color:${g.c}">${s.score}</span>
         <span class="grade-badge" style="background:${g.c}18;color:${g.c};border:1px solid ${g.c}30">${g.l}</span>
