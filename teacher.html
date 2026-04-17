@@ -579,6 +579,36 @@ let myPending={}; // teacher attendance pending changes
 let stuPending={}; // student attendance pending (keyed by studentId)
 let editAnnId=null;
 let badgeTargetStudentId=null;
+let _curTab='myatt';
+
+// ── 실시간 Firebase 업데이트 콜백 ──
+window._onFbUpdate=function(key){
+  if(!me)return; // 로그인 전이면 무시
+  const tabRender={
+    myatt:    ()=>renderMyCalendar(),
+    students: ()=>renderStudents(),
+    grades:   ()=>renderGrades(),
+    hw:       ()=>renderHw(),
+    ann:      ()=>renderAnn(),
+  };
+  // 어떤 키가 바뀌었는지에 따라 관련 탭만 갱신
+  const keyMap={
+    students:['students','myatt'],
+    classes:['students','myatt'],
+    att:['myatt','students'],
+    teacherAtt:['myatt'],
+    scores:['grades'],
+    examTypes:['grades'],
+    homework:['hw'],
+    announcements:['ann'],
+    messages:['students'],
+    studentBadges:['students'],
+  };
+  const tabs=keyMap[key]||[];
+  tabs.forEach(t=>{
+    if(t===_curTab && tabRender[t]) tabRender[t]();
+  });
+};
 
 function toast(msg,type='success'){
   const c=document.getElementById('toast-ct');
@@ -1014,6 +1044,7 @@ function renderMonthlyAtt(){
 
 // ── 탭 전환 ──
 function showTab(name){
+  _curTab=name;
   ['myatt','students','grades','hw','ann','tool'].forEach(t=>{
     document.getElementById('tab-'+t).style.display=t===name?'':'none';
     document.getElementById('tab-'+t+'-btn').classList.toggle('active',t===name);

@@ -326,6 +326,32 @@ function gradeLabel(s){if(s>=95)return{l:'A+',c:'#1a9e6a'};if(s>=90)return{l:'A'
 
 let me=null;
 let calY=new Date().getFullYear(), calM=new Date().getMonth();
+let _curTab='att';
+
+// ── 실시간 Firebase 업데이트 콜백 ──
+window._onFbUpdate=function(key){
+  if(!me)return;
+  const keyMap={
+    att:        ['att'],
+    attTime:    ['att'],
+    students:   ['att','progress'],
+    classes:    ['att','progress'],
+    teachers:   ['att'],
+    scores:     ['progress'],
+    studentBadges:['att','progress'],
+    homework:   ['hw'],
+    announcements:['ann'],
+    messages:   ['att'],
+  };
+  const tabs=keyMap[key]||[];
+  tabs.forEach(t=>{
+    if(t!==_curTab)return;
+    if(t==='att'){renderStudentCard();renderCalendar();renderTodayAtt();renderBadges();}
+    if(t==='progress')renderProgress();
+    if(t==='hw')renderHomework();
+    if(t==='ann')renderAnn();
+  });
+};
 
 function toast(msg,type='success'){
   const c=document.getElementById('toast-ct');
@@ -594,6 +620,7 @@ function renderMsgs(){
 
 // ── 탭 전환 ──
 function showTab(name){
+  _curTab=name;
   ['att','progress','hw','ann'].forEach(t=>{
     document.getElementById('tab-'+t).style.display=t===name?'':'none';
     document.getElementById('tab-'+t+'-btn').classList.toggle('active',t===name);

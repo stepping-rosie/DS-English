@@ -807,7 +807,27 @@ setInterval(tick,1000);tick();
 
 // ── NAV ──
 const PG={dashboard:'대시보드',attendance:'출결 관리',students:'학생 관리',classes:'수업 관리',teachers:'강사 관리',fees:'원비 / 재무',scores:'성적 / 평가',messages:'학부모 소통',teachermsgs:'선생님 소통',studentmsgs:'학생 소통',badges:'배지 관리',announcements:'공지사항',homework:'숙제 현황',examtypes:'시험 종류 관리',teacherchat:'강사 간 채팅'};
+let _curPage='dashboard';
+
+// ── 실시간 Firebase 업데이트 콜백 ──
+window._onFbUpdate=function(key){
+  // 어느 키가 바뀌든 현재 보이는 페이지만 다시 렌더
+  const pageRender={
+    dashboard:renderDashboard,
+    attendance:()=>{renderCalendar();if(selDate)renderAttDetail(selDate);},
+    students:renderStudents,classes:renderClasses,teachers:renderTeachers,
+    fees:()=>{renderFees();updateFeeBadge();},
+    scores:renderScores,messages:renderMessages,
+    teachermsgs:renderTeacherMessages,studentmsgs:renderStudentMessages,
+    badges:renderBadges_admin,announcements:renderAnnouncements,
+    homework:renderHomework,examtypes:renderExamTypes,teacherchat:renderTeacherChat
+  };
+  if(key==='fees')updateFeeBadge();
+  const fn=pageRender[_curPage];
+  if(fn)fn();
+};
 function showPage(name){
+  _curPage=name;
   Object.keys(PG).forEach(p=>document.getElementById('page-'+p).classList.add('hidden'));
   document.getElementById('page-'+name).classList.remove('hidden');
   document.getElementById('page-title').textContent=PG[name];

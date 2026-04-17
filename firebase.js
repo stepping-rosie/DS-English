@@ -19,12 +19,12 @@ const FIREBASE_CONFIG = {
 const DS_KEYS = [
   'students','classes','teachers','fees','scores',
   'messages','teacherMessages','studentMessages',
-  'att','teacherAtt','studentBadges','announcements',
+  'att','teacherAtt','attTime','studentBadges','announcements',
   'homework','examTypes','teacherChat','admin_pw'
 ];
 
 // 기본값이 {} 인 키 (나머지는 [])
-const OBJ_KEYS = new Set(['att','teacherAtt']);
+const OBJ_KEYS = new Set(['att','teacherAtt','attTime']);
 
 // 전역 캐시 — 모든 데이터를 메모리에 보관 (읽기 동기화용)
 window.CACHE = {};

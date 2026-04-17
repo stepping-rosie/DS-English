@@ -330,6 +330,30 @@ const BADGE_DEFS=[
 
 let me=null;
 let calY=new Date().getFullYear(), calM=new Date().getMonth();
+let _curTab='att';
+
+// ── 실시간 Firebase 업데이트 콜백 ──
+window._onFbUpdate=function(key){
+  if(!me)return;
+  const keyMap={
+    att:          ['att'],
+    attTime:      ['att'],
+    homework:     ['hw'],
+    announcements:['ann'],
+    studentMessages:['ann'],
+    studentBadges:['badges','att'],
+    students:     ['att'],
+    classes:      ['att'],
+  };
+  const tabs=keyMap[key]||[];
+  tabs.forEach(t=>{
+    if(t!==_curTab)return;
+    if(t==='att'){renderCalendar();renderAttTimes();}
+    if(t==='hw')renderHomework();
+    if(t==='badges')renderBadges();
+    if(t==='ann'){renderAnn();renderStudentMsgs();}
+  });
+};
 
 // ── 토스트 ──
 function toast(msg,type='success'){
@@ -391,12 +415,14 @@ function enterApp(){
 
 // ── 탭 전환 ──
 function showTab(name){
+  _curTab=name;
   ['att','hw','badges','ann'].forEach(t=>{
     document.getElementById('tab-'+t).style.display=t===name?'':'none';
     document.getElementById('tab-'+t+'-btn').classList.toggle('active',t===name);
   });
   if(name==='hw')renderHomework();
-  if(name==='ann')renderAnn();
+  if(name==='badges')renderBadges();
+  if(name==='ann'){renderAnn();renderStudentMsgs();}
 }
 
 // ── 숙제 ──
