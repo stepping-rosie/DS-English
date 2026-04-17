@@ -357,8 +357,11 @@ textarea{resize:vertical;min-height:80px}
           <!-- 학생관리 양식 -->
           <div style="background:var(--bg3);border:1px solid var(--border);border-radius:10px;padding:14px">
             <div style="font-size:12px;font-weight:600;color:var(--text);margin-bottom:4px">학생관리 양식</div>
-            <div style="font-size:11px;color:var(--text3);margin-bottom:10px">현재 학생 목록을 CSV로 다운로드</div>
-            <button class="btn btn-ghost btn-sm" onclick="downloadStudentCSV()">📋 CSV 다운로드</button>
+            <div style="font-size:11px;color:var(--text3);margin-bottom:10px">현재 학생 목록 다운로드</div>
+            <div style="display:flex;gap:6px;flex-wrap:wrap">
+              <button class="btn btn-ghost btn-sm" style="color:#217346;border-color:#217346" onclick="downloadStudentExcel()">📊 Excel 다운로드</button>
+              <button class="btn btn-ghost btn-sm" onclick="downloadStudentCSV()">📋 CSV 다운로드</button>
+            </div>
           </div>
 
         </div>
@@ -1715,6 +1718,25 @@ function loadLocalBackup(){
   });
   toast('로컬 백업 복원 완료 — 새로고침 합니다');
   setTimeout(()=>location.reload(),1200);
+}
+
+function downloadStudentExcel(){
+  if(typeof XLSX==='undefined'){toast('Excel 라이브러리 로딩 중입니다. 잠시 후 다시 시도해주세요.','error');return;}
+  const S=_l('students'),C=_l('classes');
+  if(!S.length){toast('학생 데이터가 없습니다','error');return;}
+  const DAY_NAMES=['일','월','화','수','목','금','토'];
+  const rows=[['이름','레벨','반','학부모 연락처','학생 연락처','등교 요일','등록일','상태','메모']];
+  S.forEach(s=>{
+    const cls=C.find(c=>c.id===s.classId);
+    const days=(s.schoolDays&&s.schoolDays.length)?s.schoolDays.map(d=>DAY_NAMES[d]).join('/'):'매일';
+    rows.push([s.name||'',s.level||'',cls?cls.name:'미배정',s.parent||'',s.phone||'',days,s.date||'',s.status||'재원',s.memo||'']);
+  });
+  const ws=XLSX.utils.aoa_to_sheet(rows);
+  ws['!cols']=[{wch:12},{wch:8},{wch:12},{wch:14},{wch:14},{wch:12},{wch:12},{wch:8},{wch:20}];
+  const wb=XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb,ws,'학생목록');
+  XLSX.writeFile(wb,`DS_English_학생목록_${new Date().toISOString().slice(0,10)}.xlsx`);
+  toast('Excel 다운로드 완료 ('+S.length+'명)');
 }
 
 function downloadStudentCSV(){
