@@ -583,23 +583,33 @@ textarea{resize:vertical;min-height:80px}
 
 <div class="toast" id="toast-ct"></div>
 
+<!-- Firebase 로딩 오버레이 -->
+<div id="fb-loading" style="position:fixed;inset:0;background:rgba(234,239,255,0.97);display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:9999;gap:16px">
+  <div style="width:44px;height:44px;border:4px solid #b8c6f0;border-top-color:#4f8ef7;border-radius:50%;animation:fb-spin 0.8s linear infinite"></div>
+  <div style="font-size:15px;font-weight:600;color:#4a5577">데이터 연결 중...</div>
+  <style>@keyframes fb-spin{to{transform:rotate(360deg)}}</style>
+</div>
+
+<!-- Firebase SDK -->
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+<script src="firebase.js"></script>
+
 <script>
 // ── DB ──
 const DB={
-  _l(k){try{return JSON.parse(localStorage.getItem('ds_'+k)||'[]')}catch{return[]}},
-  _s(k,v){localStorage.setItem('ds_'+k,JSON.stringify(v))},
-  get students(){return this._l('students')},set students(v){this._s('students',v)},
-  get classes(){return this._l('classes')},set classes(v){this._s('classes',v)},
-  get teachers(){return this._l('teachers')},set teachers(v){this._s('teachers',v)},
-  get fees(){return this._l('fees')},set fees(v){this._s('fees',v)},
-  get scores(){return this._l('scores')},set scores(v){this._s('scores',v)},
-  get messages(){return this._l('messages')},set messages(v){this._s('messages',v)},
-  get att(){try{return JSON.parse(localStorage.getItem('ds_att')||'{}')}catch{return{}}},
-  set att(v){localStorage.setItem('ds_att',JSON.stringify(v))},
-  get studentBadges(){return this._l('studentBadges')},set studentBadges(v){this._s('studentBadges',v)},
-  get announcements(){return this._l('announcements')},set announcements(v){this._s('announcements',v)},
-  get teacherAtt(){try{return JSON.parse(localStorage.getItem('ds_teacherAtt')||'{}')}catch{return{}}},
-  set teacherAtt(v){localStorage.setItem('ds_teacherAtt',JSON.stringify(v))},
+  get students(){return _l('students')},set students(v){fbWrite('students',v)},
+  get classes(){return _l('classes')},set classes(v){fbWrite('classes',v)},
+  get teachers(){return _l('teachers')},set teachers(v){fbWrite('teachers',v)},
+  get fees(){return _l('fees')},set fees(v){fbWrite('fees',v)},
+  get scores(){return _l('scores')},set scores(v){fbWrite('scores',v)},
+  get messages(){return _l('messages')},set messages(v){fbWrite('messages',v)},
+  get att(){return _lo('att')},set att(v){fbWrite('att',v)},
+  get studentBadges(){return _l('studentBadges')},set studentBadges(v){fbWrite('studentBadges',v)},
+  get announcements(){return _l('announcements')},set announcements(v){fbWrite('announcements',v)},
+  get teacherAtt(){return _lo('teacherAtt')},set teacherAtt(v){fbWrite('teacherAtt',v)},
+  get homework(){return _l('homework')},set homework(v){fbWrite('homework',v)},
+  get examTypes(){return _l('examTypes')},set examTypes(v){fbWrite('examTypes',v)},
 };
 const BADGE_DEFS=[
   {id:'b1',name:'출석왕',icon:'👑',color:'#d97706',bg:'rgba(217,119,6,0.12)',desc:'이번 달 개근'},
@@ -1345,8 +1355,12 @@ function openLearningTool(){
 }
 
 // ══ INIT ══
-(function(){
-  if(!DB.students.length){
+(async function(){
+  const ok = await fbInit();
+  document.getElementById('fb-loading').style.display='none';
+  if(!ok){alert('Firebase 연결 실패.\n인터넷 연결을 확인하거나 firebase.js의 설정값을 확인하세요.');}
+
+  if(DB.students.length < 50){
     // 강사
     const t1=uid(),t2=uid();
     DB.teachers=[
