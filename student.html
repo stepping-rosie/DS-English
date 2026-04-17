@@ -517,20 +517,25 @@ function renderCalendar(){
   for(let i=0;i<firstDow;i++)
     html+=`<div class="cal-cell empty"><div class="cal-day-num">${prevDim-firstDow+1+i}</div></div>`;
 
+  const myDays=me.schoolDays&&me.schoolDays.length?me.schoolDays:null;
   for(let d=1;d<=dim;d++){
     const ds=`${calY}-${String(calM+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
     const key=ds.replace(/-/g,'');
     const st=(att[key]||{})[me.id];
     const dow=new Date(calY,calM,d).getDay();
+    const isSchoolDay=!myDays||myDays.includes(dow);
     let cls='cal-cell';
     if(ds===today)cls+=' today';
     if(dow===0)cls+=' sun';if(dow===6)cls+=' sat';
+    if(!isSchoolDay)cls+=' empty';
     let chip='';
-    if(st==='att'){chip='<span class="status-chip chip-att">출석</span>';attC++;total++;}
-    else if(st==='abs'){chip='<span class="status-chip chip-abs">결석</span>';absC++;total++;}
-    else if(st==='late'){chip='<span class="status-chip chip-late">지각</span>';lateC++;total++;}
-    else if(st==='makeup'){chip='<span class="status-chip chip-makeup">보강</span>';attC++;total++;}
-    else if(st==='noclass'){chip='<span class="status-chip chip-noclass">수업없음</span>';}
+    if(isSchoolDay){
+      if(st==='att'){chip='<span class="status-chip chip-att">출석</span>';attC++;total++;}
+      else if(st==='abs'){chip='<span class="status-chip chip-abs">결석</span>';absC++;total++;}
+      else if(st==='late'){chip='<span class="status-chip chip-late">지각</span>';lateC++;total++;}
+      else if(st==='makeup'){chip='<span class="status-chip chip-makeup">보강</span>';attC++;total++;}
+      else if(st==='noclass'){chip='<span class="status-chip chip-noclass">수업없음</span>';}
+    }
     html+=`<div class="${cls}"><div class="cal-day-num">${d}</div>${chip}</div>`;
   }
   const rem=(firstDow+dim)%7===0?0:7-(firstDow+dim)%7;

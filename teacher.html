@@ -783,10 +783,14 @@ function saveMyAtt(){
 function renderStudents(){
   if(!me)return;
   const cf=document.getElementById('class-filter').value;
+  const attDate=document.getElementById('att-date').value||todayStr();
+  const dow=new Date(attDate).getDay();
   const myCls=_l('classes').filter(c=>c.teacherId===me.id);
   const myClsIds=new Set(myCls.map(c=>c.id));
   const allStudents=_l('students').filter(s=>s.status==='재원'&&myClsIds.has(s.classId));
-  const students=cf?allStudents.filter(s=>s.classId===cf):allStudents;
+  // 등교 요일 미지정 or 해당 요일 포함 학생만 표시
+  const students=(cf?allStudents.filter(s=>s.classId===cf):allStudents)
+    .filter(s=>!s.schoolDays||!s.schoolDays.length||s.schoolDays.includes(dow));
   const classes=_l('classes');
   const studentBadges=_l('studentBadges');
   const attDate=document.getElementById('att-date').value||todayStr();
@@ -801,9 +805,11 @@ function renderStudents(){
     tb.innerHTML=`<tr><td colspan="6"><div class="empty-state"><span class="empty-icon">👥</span><div class="empty-text">학생이 없습니다</div></div></td></tr>`;
     return;
   }
+  const dowNm=['일','월','화','수','목','금','토'];
   tb.innerHTML=students.map(s=>{
     const cls=classes.find(c=>c.id===s.classId);
     const myBadges=studentBadges.filter(b=>b.studentId===s.id);
+    const daysTag=(s.schoolDays&&s.schoolDays.length)?s.schoolDays.sort((a,b)=>a-b).map(d=>`<span style="font-size:10px;font-weight:600;color:var(--accent)">${dowNm[d]}</span>`).join('·'):'미지정';
     const saved=dayAtt[s.id];
     const pend=stuPending[attDate]?stuPending[attDate][s.id]:undefined;
     const st=pend!==undefined?pend:saved;
@@ -812,7 +818,7 @@ function renderStudents(){
       return `<span title="${def.name}" style="font-size:16px">${def.icon}</span>`;
     }).join('')+(myBadges.length>3?`<span style="font-size:11px;color:var(--text3)">+${myBadges.length-3}</span>`:'');
     return `<tr id="sr-${s.id}">
-      <td class="td-name">${s.name}</td>
+      <td class="td-name">${s.name}<br><span style="font-size:10px;color:var(--text3)">${daysTag}</span></td>
       <td style="font-family:var(--mono);font-size:12px">${s.phone||'-'}</td>
       <td>${cls?cls.name:'-'}</td>
       <td><div class="att-btns">
