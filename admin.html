@@ -338,8 +338,12 @@ textarea{resize:vertical;min-height:80px}
           <!-- DB 가져오기 -->
           <div style="background:var(--bg3);border:1px solid var(--border);border-radius:10px;padding:14px">
             <div style="font-size:12px;font-weight:600;color:var(--text);margin-bottom:4px">DB 가져오기</div>
-            <div style="font-size:11px;color:var(--text3);margin-bottom:10px">JSON 백업 파일에서 데이터 복원</div>
-            <label class="btn btn-ghost btn-sm" style="cursor:pointer">⬆ JSON 불러오기<input type="file" accept=".json" onchange="importDB(event)" style="display:none"></label>
+            <div style="font-size:11px;color:var(--text3);margin-bottom:10px">파일에서 데이터 복원</div>
+            <div style="display:flex;gap:6px;flex-wrap:wrap">
+              <label class="btn btn-ghost btn-sm" style="cursor:pointer">⬆ JSON<input type="file" accept=".json" onchange="importDB(event)" style="display:none"></label>
+              <label class="btn btn-ghost btn-sm" style="cursor:pointer;color:#217346;border-color:#217346">📊 Excel<input type="file" accept=".xlsx,.xls" onchange="importExcel(event)" style="display:none"></label>
+              <label class="btn btn-ghost btn-sm" style="cursor:pointer">📋 CSV<input type="file" accept=".csv" onchange="importCSV(event)" style="display:none"></label>
+            </div>
           </div>
 
           <!-- 로컬 백업 -->
@@ -1497,6 +1501,196 @@ function importDB(e){
     e.target.value='';
   };
   reader.readAsText(file);
+}
+
+// ── CSV 한 줄 파싱 (quoted 필드 지원) ──────────────────
+function _parseCSVLine(line){
+  const r=[];let q=false,cur='';
+  for(let i=0;i<line.length;i++){
+    const c=line[i];
+    if(c==='"'){if(q&&line[i+1]==='"'){cur+='"';i++;}else q=!q;}
+    else if(c===','&&!q){r.push(cur);cur='';}
+    else cur+=c;
+  }
+  r.push(cur);
+  return r;
+}
+
+// ── Excel 가져오기 ──────────────────────────────────────
+function importExcel(e){
+  if(typeof XLSX==='undefined'){toast('Excel 라이브러리가 로드되지 않았습니다','error');e.target.value='';return;}
+  const file=e.target.files[0];if(!file)return;
+  if(!confirm('⚠️ Excel 각 시트의 데이터로 해당 항목이 업데이트됩니다.\n학생은 이름 기준으로 매칭됩니다.\n계속하시겠습니까?')){e.target.value='';return;}
+  const reader=new FileReader();
+  reader.onload=ev=>{
+    try{
+      const wb=XLSX.read(new Uint8Array(ev.target.result),{type:'array'});
+      const S=[..._l('students')];
+      const C=_l('classes');
+      const DAY_MAP={일:0,월:1,화:2,수:3,목:4,금:5,토:6};
+      const ATT_CODE={'출석':'att','지각':'late','결석':'abs','수업없음':'noclass'};
+      const updated=[];
+
+      wb.SheetNames.forEach(sheetName=>{
+        const rows=XLSX.utils.sheet_to_json(wb.Sheets[sheetName],{header:1,defval:''});
+        if(rows.length<2)return;
+        const data=rows.slice(1).filter(r=>r.some(c=>String(c).trim()!==''));
+
+        if(sheetName==='학생목록'){
+          data.forEach(r=>{
+            const name=String(r[0]||'').trim();if(!name)return;
+            const cls=C.find(c=>c.name===String(r[2]||'').trim());
+            const dayStr=String(r[5]||'').trim();
+            const schoolDays=dayStr&&dayStr!=='매일'?dayStr.split('/').map(d=>DAY_MAP[d]).filter(d=>d!==undefined):[];
+            let st=S.find(x=>x.name===name);
+            if(st){
+              if(r[1]!=='')st.level=String(r[1]).trim();
+              if(cls)st.classId=cls.id;
+              if(r[3]!=='')st.parent=String(r[3]).trim();
+              if(r[4]!=='')st.phone=String(r[4]).trim();
+              st.schoolDays=schoolDays;
+              if(r[6]!=='')st.date=String(r[6]).trim();
+              if(r[7]!=='')st.status=String(r[7]).trim();
+              if(r[8]!=='')st.memo=String(r[8]).trim();
+            }else{
+              S.push({id:uid(),name,level:String(r[1]||'').trim(),classId:cls?cls.id:'',parent:String(r[3]||'').trim(),phone:String(r[4]||'').trim(),schoolDays,date:String(r[6]||'').trim(),status:String(r[7]||'재원').trim(),memo:String(r[8]||'').trim()});
+            }
+          });
+          fbWrite('students',S);updated.push('학생목록');
+        }
+
+        else if(sheetName==='성적'){
+          const newScores=[..._l('scores')];
+          data.forEach(r=>{
+            const stName=String(r[2]||'').trim();if(!stName)return;
+            const st=S.find(x=>x.name===stName);if(!st)return;
+            const grade=String(r[5]||'').trim();
+            const score=Number(r[6])||0;
+            newScores.push({id:uid(),studentId:st.id,name:String(r[1]||'').trim(),date:String(r[0]||'').trim(),domain:String(r[4]||'').trim(),grade,score,memo:String(r[7]||'').trim()});
+          });
+          fbWrite('scores',newScores);updated.push('성적');
+        }
+
+        else if(sheetName==='출결'){
+          const att={..._lo('att')};
+          data.forEach(r=>{
+            const dateStr=String(r[0]||'').trim();
+            const stName=String(r[1]||'').trim();
+            const statusKo=String(r[3]||'').trim();
+            if(!dateStr||!stName||!statusKo)return;
+            const st=S.find(x=>x.name===stName);if(!st)return;
+            const key=dateStr.replace(/-/g,'');
+            if(!att[key])att[key]={};
+            att[key][st.id]=ATT_CODE[statusKo]||statusKo;
+          });
+          fbWrite('att',att);updated.push('출결');
+        }
+
+        else if(sheetName==='수강료'){
+          const newFees=[..._l('fees')];
+          data.forEach(r=>{
+            const stName=String(r[1]||'').trim();if(!stName)return;
+            const st=S.find(x=>x.name===stName);if(!st)return;
+            const month=String(r[0]||'').trim();
+            const existing=newFees.find(f=>f.studentId===st.id&&f.month===month);
+            if(existing){
+              if(r[3]!=='')existing.amount=Number(r[3])||existing.amount;
+              if(r[4]!=='')existing.status=String(r[4]).trim();
+              if(r[5]!=='')existing.paidDate=String(r[5]).trim();
+            }else{
+              newFees.push({id:uid(),studentId:st.id,month,amount:Number(r[3])||0,status:String(r[4]||'미납').trim(),paidDate:String(r[5]||'').trim()});
+            }
+          });
+          fbWrite('fees',newFees);updated.push('수강료');
+        }
+
+        else if(sheetName==='숙제'){
+          const newHw=[..._l('homework')];
+          data.forEach(r=>{
+            const content=String(r[1]||'').trim();if(!content)return;
+            const cls=C.find(c=>c.name===String(r[2]||'').trim());
+            newHw.push({id:uid(),date:String(r[0]||'').trim(),content,classId:cls?cls.id:'',memo:String(r[4]||'').trim()});
+          });
+          fbWrite('homework',newHw);updated.push('숙제');
+        }
+      });
+
+      if(updated.length){
+        toast('Excel 가져오기 완료: '+updated.join(', ')+' — 새로고침합니다');
+        setTimeout(()=>location.reload(),1500);
+      }else{
+        toast('가져올 시트를 찾지 못했습니다 (학생목록/성적/출결/수강료/숙제)','error');
+      }
+    }catch(err){
+      console.error('[importExcel]',err);
+      toast('파일을 읽는 중 오류가 발생했습니다','error');
+    }
+    e.target.value='';
+  };
+  reader.readAsArrayBuffer(file);
+}
+
+// ── CSV 가져오기 (헤더로 타입 자동 판별) ───────────────
+function importCSV(e){
+  const file=e.target.files[0];if(!file)return;
+  const reader=new FileReader();
+  reader.onload=ev=>{
+    try{
+      const text=ev.target.result.replace(/^\uFEFF/,'');
+      const lines=text.split(/\r?\n/).map(l=>l.trim()).filter(l=>l);
+      if(lines.length<2){toast('데이터가 없습니다','error');e.target.value='';return;}
+      const header=_parseCSVLine(lines[0]);
+      const S=[..._l('students')];
+      const C=_l('classes');
+
+      if(header[0]==='이름'){
+        // 학생목록 CSV
+        if(!confirm('⚠️ 학생 데이터를 CSV에서 가져옵니다.\n이름이 같으면 업데이트, 새 이름은 추가됩니다.\n계속하시겠습니까?')){e.target.value='';return;}
+        const DAY_MAP={일:0,월:1,화:2,수:3,목:4,금:5,토:6};
+        lines.slice(1).forEach(line=>{
+          const r=_parseCSVLine(line);
+          const name=r[0]||'';if(!name)return;
+          const cls=C.find(c=>c.name===(r[2]||''));
+          const dayStr=r[5]||'';
+          const schoolDays=dayStr&&dayStr!=='매일'?dayStr.split('/').map(d=>DAY_MAP[d]).filter(d=>d!==undefined):[];
+          let st=S.find(x=>x.name===name);
+          if(st){
+            if(r[1])st.level=r[1];if(cls)st.classId=cls.id;
+            if(r[3])st.parent=r[3];if(r[4])st.phone=r[4];
+            st.schoolDays=schoolDays;
+            if(r[6])st.date=r[6];if(r[7])st.status=r[7];if(r[8])st.memo=r[8];
+          }else{
+            S.push({id:uid(),name,level:r[1]||'',classId:cls?cls.id:'',parent:r[3]||'',phone:r[4]||'',schoolDays,date:r[6]||'',status:r[7]||'재원',memo:r[8]||''});
+          }
+        });
+        fbWrite('students',S);
+        toast('학생 CSV 가져오기 완료 — 새로고침합니다');
+        setTimeout(()=>location.reload(),1200);
+
+      }else if(header[0]==='날짜'&&header[2]==='학생명'){
+        // 성적 CSV
+        if(!confirm('⚠️ 성적 데이터를 CSV에서 가져옵니다.\n기존 성적에 추가됩니다.\n계속하시겠습니까?')){e.target.value='';return;}
+        const newScores=[..._l('scores')];
+        lines.slice(1).forEach(line=>{
+          const r=_parseCSVLine(line);
+          const stName=r[2]||'';if(!stName)return;
+          const st=S.find(x=>x.name===stName);if(!st)return;
+          newScores.push({id:uid(),studentId:st.id,name:r[1]||'',date:r[0]||'',domain:r[4]||'',grade:r[5]||'',score:Number(r[6])||0,memo:r[7]||''});
+        });
+        fbWrite('scores',newScores);
+        toast('성적 CSV 가져오기 완료 — 새로고침합니다');
+        setTimeout(()=>location.reload(),1200);
+
+      }else{
+        toast('인식할 수 없는 CSV 형식입니다.\n내보내기로 생성한 학생목록 또는 성적 CSV만 지원합니다.','error');
+      }
+    }catch(err){
+      console.error('[importCSV]',err);
+      toast('CSV 파일을 읽는 중 오류가 발생했습니다','error');
+    }
+    e.target.value='';
+  };
+  reader.readAsText(file,'UTF-8');
 }
 
 function saveLocalBackup(){
