@@ -1367,7 +1367,7 @@ function saveScore(){
   DB.scores=S;toast('성적 입력되었습니다');closeModal('score');renderScores();
 }
 function deleteScore(id){if(!confirm('삭제?'))return;DB.scores=DB.scores.filter(s=>s.id!==id);toast('삭제되었습니다');renderScores();}
-function grade(s){if(s>=95)return{l:'A+',c:'badge-green'};if(s>=90)return{l:'A',c:'badge-green'};if(s>=80)return{l:'B',c:'badge-blue'};if(s>=70)return{l:'C',c:'badge-amber'};if(s>=60)return{l:'D',c:'badge-amber'};return{l:'F',c:'badge-red'};}
+function grade(s){if(s>=100)return{l:'A',c:'badge-green'};if(s>=90)return{l:'B',c:'badge-blue'};if(s>=80)return{l:'C',c:'badge-blue'};if(s>=70)return{l:'D',c:'badge-amber'};if(s>=60)return{l:'E',c:'badge-amber'};return{l:'F',c:'badge-red'};}
 function renderScores(){
   const SC=DB.scores,S=DB.students;
   const q=(document.getElementById('score-search').value||'').toLowerCase();
