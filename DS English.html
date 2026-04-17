@@ -1360,7 +1360,7 @@ function openLearningTool(){
   document.getElementById('fb-loading').style.display='none';
   if(!ok){alert('Firebase 연결 실패.\n인터넷 연결을 확인하거나 firebase.js의 설정값을 확인하세요.');}
 
-  if(DB.students.length < 50){
+  if(!DB.students.length){
     // 강사
     const t1=uid(),t2=uid();
     DB.teachers=[
