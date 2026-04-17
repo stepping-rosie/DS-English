@@ -530,6 +530,38 @@ tbody tr:hover{background:var(--bg3)}
   </div>
 </div>
 
+<!-- ── 학생 소통 Modal ── -->
+<div class="modal-overlay" id="student-msg-modal">
+  <div class="modal">
+    <div class="modal-hdr">
+      <span class="modal-ttl">💬 학생 소통</span>
+      <button class="modal-close" onclick="closeStudentMsgModal()">×</button>
+    </div>
+    <div class="modal-body">
+      <div style="font-size:14px;font-weight:600;color:var(--text);margin-bottom:14px">학생: <span id="sm-student-name" style="color:var(--accent)"></span></div>
+      <div class="form-group" style="margin-bottom:12px">
+        <label>메시지 유형</label>
+        <select id="sm-type">
+          <option value="학습 안내">학습 안내</option>
+          <option value="숙제 알림">숙제 알림</option>
+          <option value="성적 통보">성적 통보</option>
+          <option value="출결 알림">출결 알림</option>
+          <option value="칭찬">칭찬</option>
+          <option value="기타">기타</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>내용 *</label>
+        <textarea id="sm-content" placeholder="학생에게 전달할 내용을 입력하세요..." style="min-height:100px"></textarea>
+      </div>
+    </div>
+    <div class="modal-ftr">
+      <button class="btn btn-ghost btn-sm" onclick="closeStudentMsgModal()">취소</button>
+      <button class="btn btn-primary btn-sm" onclick="sendStudentMsg()">전달</button>
+    </div>
+  </div>
+</div>
+
 <!-- ── QR 생성 모달 ── -->
 <div class="modal-overlay" id="qr-modal">
   <div class="qr-modal-inner">
@@ -791,9 +823,10 @@ function renderStudents(){
         <button class="ab ab-noclass${st==='noclass'?' on':''}" onclick="setStuAtt('${s.id}','noclass',this,'${attDate}')">수업없음</button>
       </div></td>
       <td>${badgeHtml||'-'}</td>
-      <td style="white-space:nowrap">
-        <button class="btn btn-sm" style="background:var(--purple-bg);color:var(--purple);border:1px solid rgba(124,92,252,0.2);font-size:11px;margin-bottom:3px" onclick="openBadgeModal('${s.id}','${s.name}')">🏅 배지</button>
-        <button class="btn btn-sm" style="background:var(--green-bg);color:var(--green);border:1px solid rgba(26,158,106,0.2);font-size:11px" onclick="openParentFeedbackModal('${s.id}','${s.name}')">📩 피드백</button>
+      <td style="white-space:nowrap;display:flex;flex-direction:column;gap:3px;padding:8px 12px">
+        <button class="btn btn-sm" style="background:var(--purple-bg);color:var(--purple);border:1px solid rgba(124,92,252,0.2);font-size:11px" onclick="openBadgeModal('${s.id}','${s.name}')">🏅 배지</button>
+        <button class="btn btn-sm" style="background:var(--green-bg);color:var(--green);border:1px solid rgba(26,158,106,0.2);font-size:11px" onclick="openParentFeedbackModal('${s.id}','${s.name}')">📩 학부모 소통</button>
+        <button class="btn btn-sm" style="background:rgba(79,142,247,0.1);color:var(--accent);border:1px solid rgba(79,142,247,0.2);font-size:11px" onclick="openStudentMsgModal('${s.id}','${s.name}')">💬 학생 소통</button>
       </td>
     </tr>`;
   }).join('');
@@ -1061,7 +1094,7 @@ function showTab(name){
 }
 
 // ── 성적 관리 ──
-const GRADE_MAP={'A':92,'B':77,'C':65,'D':50};
+const GRADE_MAP={'A':100,'B':90,'C':80,'D':70,'E':60,'F':0};
 const DEFAULT_EXAM_TYPES=['독해교재','문법교재','중간평가','단어시험','추가단어시험','모의고사','쓰기평가','기타시험'];
 
 function getExamTypes(){
@@ -1174,10 +1207,12 @@ function renderGrades(){
       <td class="grade-td">
         <select class="grade-sel" id="g-${s.id}" onchange="updateGradeColor('${s.id}')">
           <option value="">-</option>
-          <option value="A" class="grade-A">A</option>
-          <option value="B" class="grade-B">B</option>
-          <option value="C" class="grade-C">C</option>
-          <option value="D" class="grade-D">D</option>
+          <option value="A" class="grade-A">A (100)</option>
+          <option value="B" class="grade-B">B (90)</option>
+          <option value="C" class="grade-C">C (80)</option>
+          <option value="D" class="grade-D">D (70)</option>
+          <option value="E" class="grade-D">E (60)</option>
+          <option value="F" class="grade-D">F</option>
         </select>
       </td>
       <td class="grade-td"><input class="grade-memo-inp" id="gm-${s.id}" placeholder="메모"></td>
@@ -1187,13 +1222,13 @@ function renderGrades(){
 }
 
 function gradeFromScore(score){
-  if(score>=85)return'A';if(score>=70)return'B';if(score>=60)return'C';return'D';
+  if(score>=100)return'A';if(score>=90)return'B';if(score>=80)return'C';if(score>=70)return'D';if(score>=60)return'E';return'F';
 }
 
 function updateGradeColor(sid){
   const sel=document.getElementById('g-'+sid);
   const v=sel.value;
-  const colors={A:'#1a9e6a',B:'#4f8ef7',C:'#c87a0d',D:'#d63850'};
+  const colors={A:'#1a9e6a',B:'#4f8ef7',C:'#c87a0d',D:'#d63850',E:'#d63850',F:'#888'};
   sel.style.color=colors[v]||'';
   sel.style.fontWeight=v?'700':'';
 }
@@ -1323,11 +1358,48 @@ function sendParentFeedback(){
   const content=document.getElementById('pf-content').value.trim();
   if(!content){toast('내용을 입력하세요','error');return;}
   if(!pfTargetStudentId){toast('오류가 발생했습니다','error');return;}
+  const type=document.getElementById('pf-type').value;
+  const msg={id:uid(),studentId:pfTargetStudentId,teacherId:me.id,teacherName:me.name,type,content,date:todayStr(),from:'teacher'};
+  // 학부모에게 전달
   const M=_l('messages');
-  M.push({id:uid(),studentId:pfTargetStudentId,teacherId:me.id,type:document.getElementById('pf-type').value,content,date:todayStr()});
+  M.push(msg);
   _s('messages',M);
+  // 관리자에게도 전달 (teacherMessages)
+  const TM=_l('teacherMessages');
+  TM.push({...msg,toAdmin:true,label:'[학부모 소통] '+type});
+  _s('teacherMessages',TM);
   closeParentFeedbackModal();
   toast('학부모 피드백이 전달되었습니다 📩');
+}
+
+// ── 학생 소통 ──
+let smTargetStudentId=null;
+function openStudentMsgModal(studentId,studentName){
+  smTargetStudentId=studentId;
+  document.getElementById('sm-student-name').textContent=studentName;
+  document.getElementById('sm-content').value='';
+  document.getElementById('student-msg-modal').classList.add('open');
+}
+function closeStudentMsgModal(){
+  document.getElementById('student-msg-modal').classList.remove('open');
+  smTargetStudentId=null;
+}
+function sendStudentMsg(){
+  const content=document.getElementById('sm-content').value.trim();
+  if(!content){toast('내용을 입력하세요','error');return;}
+  if(!smTargetStudentId){toast('오류가 발생했습니다','error');return;}
+  const type=document.getElementById('sm-type').value;
+  const msg={id:uid(),studentId:smTargetStudentId,teacherId:me.id,teacherName:me.name,type,content,date:todayStr(),from:'teacher'};
+  // 학생에게 전달
+  const SM=_l('studentMessages');
+  SM.push(msg);
+  _s('studentMessages',SM);
+  // 관리자에게도 전달 (teacherMessages)
+  const TM=_l('teacherMessages');
+  TM.push({...msg,toAdmin:true,label:'[학생 소통] '+type});
+  _s('teacherMessages',TM);
+  closeStudentMsgModal();
+  toast('학생에게 메시지가 전달되었습니다 💬');
 }
 
 // ── 교사 간 메시지 ──
