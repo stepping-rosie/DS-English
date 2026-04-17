@@ -327,8 +327,12 @@ textarea{resize:vertical;min-height:80px}
           <!-- DB 내보내기 -->
           <div style="background:var(--bg3);border:1px solid var(--border);border-radius:10px;padding:14px">
             <div style="font-size:12px;font-weight:600;color:var(--text);margin-bottom:4px">DB 내보내기</div>
-            <div style="font-size:11px;color:var(--text3);margin-bottom:10px">전체 데이터를 JSON 파일로 저장</div>
-            <button class="btn btn-primary btn-sm" onclick="exportDB()">⬇ JSON 다운로드</button>
+            <div style="font-size:11px;color:var(--text3);margin-bottom:10px">전체 데이터 파일로 저장</div>
+            <div style="display:flex;gap:6px;flex-wrap:wrap">
+              <button class="btn btn-primary btn-sm" onclick="exportDB()">⬇ JSON</button>
+              <button class="btn btn-primary btn-sm" style="background:#217346" onclick="exportExcel()">📊 Excel</button>
+              <button class="btn btn-ghost btn-sm" onclick="exportAllCSV()">📋 CSV</button>
+            </div>
           </div>
 
           <!-- DB 가져오기 -->
@@ -741,6 +745,7 @@ textarea{resize:vertical;min-height:80px}
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
 <script src="firebase.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 
 <script>
 // ── DB ──
@@ -1522,12 +1527,14 @@ function downloadStudentCSV(){
   const S=_l('students');
   const C=_l('classes');
   if(!S.length){toast('학생 데이터가 없습니다','error');return;}
-  const header=['이름','레벨','반','학부모 연락처','학생 연락처','등록일','상태','메모'];
+  const DAY_NAMES=['일','월','화','수','목','금','토'];
+  const header=['이름','레벨','반','학부모 연락처','학생 연락처','등교 요일','등록일','상태','메모'];
   const rows=S.map(s=>{
     const cls=C.find(c=>c.id===s.classId);
+    const days=(s.schoolDays&&s.schoolDays.length)?s.schoolDays.map(d=>DAY_NAMES[d]).join('/'):'매일';
     return [
       s.name||'',s.level||'',cls?cls.name:'미배정',
-      s.parent||'',s.phone||'',s.date||'',s.status||'',s.memo||''
+      s.parent||'',s.phone||'',days,s.date||'',s.status||'',s.memo||''
     ].map(v=>'"'+String(v).replace(/"/g,'""')+'"').join(',');
   });
   const csv='\uFEFF'+[header.join(','),...rows].join('\n');
@@ -1537,6 +1544,109 @@ function downloadStudentCSV(){
   a.download=`DS_English_학생목록_${new Date().toISOString().slice(0,10)}.csv`;
   a.click();
   toast('CSV 다운로드 완료 ('+S.length+'명)');
+}
+
+// ── Excel 내보내기 (다중 시트) ──────────────────────────
+function exportExcel(){
+  if(typeof XLSX==='undefined'){toast('Excel 라이브러리 로딩 중입니다. 잠시 후 다시 시도해주세요.','error');return;}
+  const S=_l('students'),C=_l('classes'),T=_l('teachers');
+  const SCORES=_l('scores'),FEES=_l('fees'),HW=_l('homework');
+  const ATT=_lo('att');
+  const DAY_NAMES=['일','월','화','수','목','금','토'];
+  const wb=XLSX.utils.book_new();
+
+  // ── 시트1: 학생목록 ──
+  const sRows=[['이름','레벨','반','학부모 연락처','학생 연락처','등교 요일','등록일','상태','메모']];
+  S.forEach(s=>{
+    const cls=C.find(c=>c.id===s.classId);
+    const days=(s.schoolDays&&s.schoolDays.length)?s.schoolDays.map(d=>DAY_NAMES[d]).join('/'):'매일';
+    sRows.push([s.name||'',s.level||'',cls?cls.name:'미배정',s.parent||'',s.phone||'',days,s.date||'',s.status||'재원',s.memo||'']);
+  });
+  const ws1=XLSX.utils.aoa_to_sheet(sRows);
+  ws1['!cols']=[{wch:12},{wch:8},{wch:12},{wch:14},{wch:14},{wch:12},{wch:12},{wch:8},{wch:20}];
+  XLSX.utils.book_append_sheet(wb,ws1,'학생목록');
+
+  // ── 시트2: 성적 ──
+  const grRows=[['날짜','평가명','학생명','반','영역','등급','점수','메모']];
+  SCORES.forEach(sc=>{
+    const st=S.find(x=>x.id===sc.studentId);
+    const cls=st?C.find(c=>c.id===st.classId):null;
+    const grLetter=sc.grade||(sc.score>=100?'A':sc.score>=90?'B':sc.score>=80?'C':sc.score>=70?'D':sc.score>=60?'E':'F');
+    grRows.push([sc.date||'',sc.name||'',st?st.name:'',cls?cls.name:'',sc.domain||'',grLetter,sc.score??'',sc.memo||'']);
+  });
+  const ws2=XLSX.utils.aoa_to_sheet(grRows);
+  ws2['!cols']=[{wch:12},{wch:16},{wch:12},{wch:12},{wch:10},{wch:6},{wch:6},{wch:20}];
+  XLSX.utils.book_append_sheet(wb,ws2,'성적');
+
+  // ── 시트3: 출결 ──
+  const attRows=[['날짜','학생명','반','출결 상태']];
+  const ATT_LABEL={att:'출석',late:'지각',abs:'결석',noclass:'수업없음'};
+  Object.entries(ATT).sort((a,b)=>a[0].localeCompare(b[0])).forEach(([dateKey,dayObj])=>{
+    const dateStr=dateKey.replace(/(\d{4})(\d{2})(\d{2})/,'$1-$2-$3');
+    Object.entries(dayObj).forEach(([sid,status])=>{
+      const st=S.find(x=>x.id===sid);
+      const cls=st?C.find(c=>c.id===st.classId):null;
+      attRows.push([dateStr,st?st.name:sid,cls?cls.name:'',ATT_LABEL[status]||status]);
+    });
+  });
+  const ws3=XLSX.utils.aoa_to_sheet(attRows);
+  ws3['!cols']=[{wch:12},{wch:12},{wch:12},{wch:10}];
+  XLSX.utils.book_append_sheet(wb,ws3,'출결');
+
+  // ── 시트4: 수강료 ──
+  const feeRows=[['월','학생명','반','금액(만원)','상태','납부일']];
+  FEES.forEach(f=>{
+    const st=S.find(x=>x.id===f.studentId);
+    const cls=st?C.find(c=>c.id===st.classId):null;
+    feeRows.push([f.month||'',st?st.name:'',cls?cls.name:'',f.amount||'',f.status||'',f.paidDate||'']);
+  });
+  const ws4=XLSX.utils.aoa_to_sheet(feeRows);
+  ws4['!cols']=[{wch:10},{wch:12},{wch:12},{wch:10},{wch:10},{wch:12}];
+  XLSX.utils.book_append_sheet(wb,ws4,'수강료');
+
+  // ── 시트5: 숙제 ──
+  if(HW.length){
+    const hwRows=[['날짜','내용','반','대상 학생수','메모']];
+    HW.forEach(h=>{
+      const cls=C.find(c=>c.id===h.classId);
+      const cnt=h.studentIds?h.studentIds.length:(h.all?'전체':'');
+      hwRows.push([h.date||'',h.content||'',cls?cls.name:'전체',cnt,h.memo||'']);
+    });
+    const ws5=XLSX.utils.aoa_to_sheet(hwRows);
+    ws5['!cols']=[{wch:12},{wch:30},{wch:12},{wch:10},{wch:20}];
+    XLSX.utils.book_append_sheet(wb,ws5,'숙제');
+  }
+
+  const fname=`DS_English_${new Date().toISOString().slice(0,10)}.xlsx`;
+  XLSX.writeFile(wb,fname);
+  toast('Excel 다운로드 완료 (학생/성적/출결/수강료'+(HW.length?'/숙제':'')+')');
+}
+
+// ── CSV 개별 다운로드 선택 모달 ─────────────────────────
+function exportAllCSV(){
+  const choice=confirm('학생목록만 CSV로 다운로드하시겠습니까?\n\n[확인] 학생목록  [취소] 성적 CSV');
+  if(choice){downloadStudentCSV();}
+  else{downloadScoreCSV();}
+}
+
+function downloadScoreCSV(){
+  const S=_l('students'),C=_l('classes'),SCORES=_l('scores');
+  if(!SCORES.length){toast('성적 데이터가 없습니다','error');return;}
+  const header=['날짜','평가명','학생명','반','영역','등급','점수','메모'];
+  const rows=SCORES.map(sc=>{
+    const st=S.find(x=>x.id===sc.studentId);
+    const cls=st?C.find(c=>c.id===st.classId):null;
+    const grLetter=sc.grade||(sc.score>=100?'A':sc.score>=90?'B':sc.score>=80?'C':sc.score>=70?'D':sc.score>=60?'E':'F');
+    return [sc.date||'',sc.name||'',st?st.name:'',cls?cls.name:'',sc.domain||'',grLetter,sc.score??'',sc.memo||'']
+      .map(v=>'"'+String(v).replace(/"/g,'""')+'"').join(',');
+  });
+  const csv='\uFEFF'+[header.join(','),...rows].join('\n');
+  const blob=new Blob([csv],{type:'text/csv;charset=utf-8'});
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(blob);
+  a.download=`DS_English_성적_${new Date().toISOString().slice(0,10)}.csv`;
+  a.click();
+  toast('성적 CSV 다운로드 완료 ('+SCORES.length+'건)');
 }
 
 function renderDashboard(){
