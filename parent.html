@@ -299,6 +299,18 @@ body{background:var(--bg);color:var(--text);font-family:var(--font);font-size:14
 
 <div class="toast" id="toast-ct"></div>
 
+<!-- Firebase 로딩 오버레이 -->
+<div id="fb-loading" style="position:fixed;inset:0;background:rgba(234,239,255,0.97);display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:9999;gap:16px">
+  <div style="width:44px;height:44px;border:4px solid #b8c6f0;border-top-color:#4f8ef7;border-radius:50%;animation:fb-spin 0.8s linear infinite"></div>
+  <div style="font-size:15px;font-weight:600;color:#4a5577">데이터 연결 중...</div>
+  <style>@keyframes fb-spin{to{transform:rotate(360deg)}}</style>
+</div>
+
+<!-- Firebase SDK -->
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+<script src="firebase.js"></script>
+
 <script>
 // ── 상수 & 데이터 ──
 const BADGE_DEFS=[
@@ -309,8 +321,7 @@ const BADGE_DEFS=[
   {id:'b5',name:'친절상',icon:'🌈',color:'#7c5cfc',bg:'rgba(124,92,252,0.12)',desc:'친구 배려 칭찬'},
   {id:'b6',name:'집중상',icon:'🎯',color:'#0891b2',bg:'rgba(8,145,178,0.12)',desc:'수업 집중력 우수'},
 ];
-function _l(k){try{return JSON.parse(localStorage.getItem('ds_'+k)||'[]')}catch{return[]}}
-function _lo(k){try{return JSON.parse(localStorage.getItem('ds_'+k)||'{}')}catch{return{}}}
+// _l, _lo — firebase.js에서 전역으로 제공
 function gradeLabel(s){if(s>=95)return{l:'A+',c:'#1a9e6a'};if(s>=90)return{l:'A',c:'#1a9e6a'};if(s>=80)return{l:'B',c:'#3b82f6'};if(s>=70)return{l:'C',c:'#c87a0d'};if(s>=60)return{l:'D',c:'#c87a0d'};return{l:'F',c:'#d63850'};}
 
 let me=null;
@@ -617,7 +628,11 @@ function renderHomework(){
 }
 
 // ── 초기화 ──
-(function(){
+(async function(){
+  const ok = await fbInit();
+  document.getElementById('fb-loading').style.display='none';
+  if(!ok){alert('Firebase 연결 실패.\n인터넷 연결을 확인하거나 firebase.js의 설정값을 확인하세요.');}
+
   const savedId=sessionStorage.getItem('ds_parent_student_id');
   if(savedId){
     const s=_l('students').find(x=>x.id===savedId);
