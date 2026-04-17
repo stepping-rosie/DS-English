@@ -327,10 +327,10 @@ textarea{resize:vertical;min-height:80px}
           <!-- DB 내보내기 -->
           <div style="background:var(--bg3);border:1px solid var(--border);border-radius:10px;padding:14px">
             <div style="font-size:12px;font-weight:600;color:var(--text);margin-bottom:4px">DB 내보내기</div>
-            <div style="font-size:11px;color:var(--text3);margin-bottom:10px">전체 데이터 파일로 저장</div>
+            <div style="font-size:11px;color:var(--text3);margin-bottom:10px">전체 데이터 파일로 저장 (Excel: 15개 시트)</div>
             <div style="display:flex;gap:6px;flex-wrap:wrap">
               <button class="btn btn-primary btn-sm" onclick="exportDB()">⬇ JSON</button>
-              <button class="btn btn-primary btn-sm" style="background:#217346" onclick="exportExcel()">📊 Excel</button>
+              <button class="btn btn-primary btn-sm" style="background:#217346" onclick="exportExcel()">📊 Excel (전체)</button>
               <button class="btn btn-ghost btn-sm" onclick="exportAllCSV()">📋 CSV</button>
             </div>
           </div>
@@ -1767,75 +1767,159 @@ function exportExcel(){
   if(typeof XLSX==='undefined'){toast('Excel 라이브러리 로딩 중입니다. 잠시 후 다시 시도해주세요.','error');return;}
   const S=_l('students'),C=_l('classes'),T=_l('teachers');
   const SCORES=_l('scores'),FEES=_l('fees'),HW=_l('homework');
-  const ATT=_lo('att');
+  const MSGS=_l('messages'),TMSGS=_l('teacherMessages'),SMSGS=_l('studentMessages');
+  const BADGES=_l('studentBadges'),ANNS=_l('announcements'),CHAT=_l('teacherChat');
+  const ETYPES=_l('examTypes');
+  const ATT=_lo('att'),TATT=_lo('teacherAtt');
   const DAY_NAMES=['일','월','화','수','목','금','토'];
+  const ATT_LABEL={att:'출석',late:'지각',abs:'결석',noclass:'수업없음'};
   const wb=XLSX.utils.book_new();
 
-  // ── 시트1: 학생목록 ──
+  function addSheet(name,rows,colWidths){
+    const ws=XLSX.utils.aoa_to_sheet(rows);
+    if(colWidths)ws['!cols']=colWidths.map(w=>({wch:w}));
+    XLSX.utils.book_append_sheet(wb,ws,name);
+  }
+
+  // ── 1. 학생목록 ──
   const sRows=[['이름','레벨','반','학부모 연락처','학생 연락처','등교 요일','등록일','상태','메모']];
   S.forEach(s=>{
     const cls=C.find(c=>c.id===s.classId);
     const days=(s.schoolDays&&s.schoolDays.length)?s.schoolDays.map(d=>DAY_NAMES[d]).join('/'):'매일';
     sRows.push([s.name||'',s.level||'',cls?cls.name:'미배정',s.parent||'',s.phone||'',days,s.date||'',s.status||'재원',s.memo||'']);
   });
-  const ws1=XLSX.utils.aoa_to_sheet(sRows);
-  ws1['!cols']=[{wch:12},{wch:8},{wch:12},{wch:14},{wch:14},{wch:12},{wch:12},{wch:8},{wch:20}];
-  XLSX.utils.book_append_sheet(wb,ws1,'학생목록');
+  addSheet('학생목록',sRows,[12,8,12,14,14,12,12,8,24]);
 
-  // ── 시트2: 성적 ──
+  // ── 2. 반(수업) ──
+  const cRows=[['반명','레벨','담당강사','시간표','정원','교재']];
+  C.forEach(c=>{
+    const t=T.find(x=>x.id===c.teacherId);
+    cRows.push([c.name||'',c.level||'',t?t.name:'',c.schedule||'',c.max||'',c.textbook||'']);
+  });
+  addSheet('반(수업)',cRows,[12,8,10,20,6,20]);
+
+  // ── 3. 강사 ──
+  const tRows=[['이름','연락처','담당과목','입사일','급여(만원)','고용형태','메모']];
+  T.forEach(t=>{
+    tRows.push([t.name||'',t.phone||'',t.subjects||'',t.hire||'',t.salary||'',t.contract||'',t.memo||'']);
+  });
+  addSheet('강사',tRows,[12,14,20,12,10,10,24]);
+
+  // ── 4. 성적 ──
   const grRows=[['날짜','평가명','학생명','반','영역','등급','점수','메모']];
-  SCORES.forEach(sc=>{
+  [...SCORES].sort((a,b)=>(a.date||'').localeCompare(b.date||'')).forEach(sc=>{
     const st=S.find(x=>x.id===sc.studentId);
     const cls=st?C.find(c=>c.id===st.classId):null;
-    const grLetter=sc.grade||(sc.score>=100?'A':sc.score>=90?'B':sc.score>=80?'C':sc.score>=70?'D':sc.score>=60?'E':'F');
-    grRows.push([sc.date||'',sc.name||'',st?st.name:'',cls?cls.name:'',sc.domain||'',grLetter,sc.score??'',sc.memo||'']);
+    const gr=sc.grade||(sc.score>=100?'A':sc.score>=90?'B':sc.score>=80?'C':sc.score>=70?'D':sc.score>=60?'E':'F');
+    grRows.push([sc.date||'',sc.name||'',st?st.name:'',cls?cls.name:'',sc.domain||'',gr,sc.score??'',sc.memo||'']);
   });
-  const ws2=XLSX.utils.aoa_to_sheet(grRows);
-  ws2['!cols']=[{wch:12},{wch:16},{wch:12},{wch:12},{wch:10},{wch:6},{wch:6},{wch:20}];
-  XLSX.utils.book_append_sheet(wb,ws2,'성적');
+  addSheet('성적',grRows,[12,16,12,12,10,6,6,24]);
 
-  // ── 시트3: 출결 ──
+  // ── 5. 출결(학생) ──
   const attRows=[['날짜','학생명','반','출결 상태']];
-  const ATT_LABEL={att:'출석',late:'지각',abs:'결석',noclass:'수업없음'};
-  Object.entries(ATT).sort((a,b)=>a[0].localeCompare(b[0])).forEach(([dateKey,dayObj])=>{
-    const dateStr=dateKey.replace(/(\d{4})(\d{2})(\d{2})/,'$1-$2-$3');
-    Object.entries(dayObj).forEach(([sid,status])=>{
-      const st=S.find(x=>x.id===sid);
-      const cls=st?C.find(c=>c.id===st.classId):null;
-      attRows.push([dateStr,st?st.name:sid,cls?cls.name:'',ATT_LABEL[status]||status]);
+  Object.entries(ATT).sort((a,b)=>a[0].localeCompare(b[0])).forEach(([dk,dayObj])=>{
+    const ds=dk.replace(/(\d{4})(\d{2})(\d{2})/,'$1-$2-$3');
+    Object.entries(dayObj).forEach(([sid,st])=>{
+      const stu=S.find(x=>x.id===sid);
+      const cls=stu?C.find(c=>c.id===stu.classId):null;
+      attRows.push([ds,stu?stu.name:sid,cls?cls.name:'',ATT_LABEL[st]||st]);
     });
   });
-  const ws3=XLSX.utils.aoa_to_sheet(attRows);
-  ws3['!cols']=[{wch:12},{wch:12},{wch:12},{wch:10}];
-  XLSX.utils.book_append_sheet(wb,ws3,'출결');
+  addSheet('출결(학생)',attRows,[12,12,12,10]);
 
-  // ── 시트4: 수강료 ──
+  // ── 6. 출결(강사) ──
+  const tattRows=[['날짜','강사명','출결 상태']];
+  Object.entries(TATT).sort((a,b)=>a[0].localeCompare(b[0])).forEach(([dk,dayObj])=>{
+    const ds=dk.replace(/(\d{4})(\d{2})(\d{2})/,'$1-$2-$3');
+    Object.entries(dayObj).forEach(([tid,st])=>{
+      const tc=T.find(x=>x.id===tid);
+      tattRows.push([ds,tc?tc.name:tid,ATT_LABEL[st]||st]);
+    });
+  });
+  addSheet('출결(강사)',tattRows,[12,12,10]);
+
+  // ── 7. 수강료 ──
   const feeRows=[['월','학생명','반','금액(만원)','상태','납부일']];
-  FEES.forEach(f=>{
+  [...FEES].sort((a,b)=>(a.month||'').localeCompare(b.month||'')).forEach(f=>{
     const st=S.find(x=>x.id===f.studentId);
     const cls=st?C.find(c=>c.id===st.classId):null;
     feeRows.push([f.month||'',st?st.name:'',cls?cls.name:'',f.amount||'',f.status||'',f.paidDate||'']);
   });
-  const ws4=XLSX.utils.aoa_to_sheet(feeRows);
-  ws4['!cols']=[{wch:10},{wch:12},{wch:12},{wch:10},{wch:10},{wch:12}];
-  XLSX.utils.book_append_sheet(wb,ws4,'수강료');
+  addSheet('수강료',feeRows,[10,12,12,10,10,12]);
 
-  // ── 시트5: 숙제 ──
-  if(HW.length){
-    const hwRows=[['날짜','내용','반','대상 학생수','메모']];
-    HW.forEach(h=>{
-      const cls=C.find(c=>c.id===h.classId);
-      const cnt=h.studentIds?h.studentIds.length:(h.all?'전체':'');
-      hwRows.push([h.date||'',h.content||'',cls?cls.name:'전체',cnt,h.memo||'']);
-    });
-    const ws5=XLSX.utils.aoa_to_sheet(hwRows);
-    ws5['!cols']=[{wch:12},{wch:30},{wch:12},{wch:10},{wch:20}];
-    XLSX.utils.book_append_sheet(wb,ws5,'숙제');
-  }
+  // ── 8. 배지 ──
+  const bgRows=[['날짜','학생명','반','배지','설명','부여강사','메모']];
+  [...BADGES].sort((a,b)=>(a.date||'').localeCompare(b.date||'')).forEach(b=>{
+    const st=S.find(x=>x.id===b.studentId);
+    const cls=st?C.find(c=>c.id===st.classId):null;
+    const tc=T.find(x=>x.id===b.teacherId);
+    const def=BADGE_DEFS.find(d=>d.id===b.badgeId)||{name:'배지',desc:''};
+    bgRows.push([b.date||'',st?st.name:'',cls?cls.name:'',def.icon+' '+def.name,def.desc,tc?tc.name:'',b.note||'']);
+  });
+  addSheet('배지',bgRows,[12,12,12,12,16,10,24]);
 
-  const fname=`DS_English_${new Date().toISOString().slice(0,10)}.xlsx`;
+  // ── 9. 공지사항 ──
+  const annRows=[['날짜','중요','제목','내용','작성강사','대상반']];
+  [...ANNS].sort((a,b)=>(a.date||'').localeCompare(b.date||'')).forEach(a=>{
+    const tc=T.find(x=>x.id===a.teacherId);
+    const cls=a.targetClass==='all'?'전체':C.find(c=>c.id===a.targetClass)?.name||'';
+    annRows.push([a.date||'',a.important?'★':'',a.title||'',a.content||'',tc?tc.name:'',cls]);
+  });
+  addSheet('공지사항',annRows,[12,4,20,40,10,12]);
+
+  // ── 10. 숙제 ──
+  const hwRows=[['등록일','마감일','반','제목','내용','담당강사']];
+  [...HW].sort((a,b)=>(a.date||'').localeCompare(b.date||'')).forEach(h=>{
+    const cls=C.find(c=>c.id===h.classId);
+    const tc=T.find(x=>x.id===h.teacherId);
+    hwRows.push([h.date||'',h.dueDate||'',cls?cls.name:'전체',h.title||'',h.desc||h.url||'',tc?tc.name:'']);
+  });
+  addSheet('숙제',hwRows,[12,12,12,20,30,10]);
+
+  // ── 11. 학부모 소통 ──
+  const msgRows=[['날짜','학생명','반','유형','내용']];
+  [...MSGS].sort((a,b)=>(a.date||'').localeCompare(b.date||'')).forEach(m=>{
+    const st=S.find(x=>x.id===m.studentId);
+    const cls=st?C.find(c=>c.id===st.classId):null;
+    msgRows.push([m.date||'',st?st.name:'',cls?cls.name:'',m.type||'',m.content||'']);
+  });
+  addSheet('학부모소통',msgRows,[12,12,12,12,40]);
+
+  // ── 12. 강사 소통 ──
+  const tmsgRows=[['날짜','강사명','유형','내용']];
+  [...TMSGS].sort((a,b)=>(a.date||'').localeCompare(b.date||'')).forEach(m=>{
+    const tc=T.find(x=>x.id===m.teacherId);
+    tmsgRows.push([m.date||'',tc?tc.name:'',m.type||'',m.content||'']);
+  });
+  addSheet('강사소통',tmsgRows,[12,12,12,40]);
+
+  // ── 13. 학생 소통 ──
+  const smsgRows=[['날짜','학생명','반','유형','내용']];
+  [...SMSGS].sort((a,b)=>(a.date||'').localeCompare(b.date||'')).forEach(m=>{
+    const st=S.find(x=>x.id===m.studentId);
+    const cls=st?C.find(c=>c.id===st.classId):null;
+    smsgRows.push([m.date||'',st?st.name:'',cls?cls.name:'',m.type||'',m.content||'']);
+  });
+  addSheet('학생소통',smsgRows,[12,12,12,12,40]);
+
+  // ── 14. 강사 채팅 ──
+  const chatRows=[['날짜','발신강사','수신','내용']];
+  [...CHAT].sort((a,b)=>(a.date||'').localeCompare(b.date||'')).forEach(m=>{
+    const from=T.find(x=>x.id===m.fromTeacherId);
+    const toName=m.toTeacherId==='all'?'전체강사':(T.find(x=>x.id===m.toTeacherId)||{}).name||'';
+    chatRows.push([m.date||'',from?from.name:'',toName,m.content||'']);
+  });
+  addSheet('강사채팅',chatRows,[12,12,12,40]);
+
+  // ── 15. 시험유형 ──
+  const etRows=[['시험 유형']];
+  ETYPES.forEach(t=>etRows.push([t]));
+  addSheet('시험유형',etRows,[20]);
+
+  const fname=`DS_English_전체백업_${new Date().toISOString().slice(0,10)}.xlsx`;
   XLSX.writeFile(wb,fname);
-  toast('Excel 다운로드 완료 (학생/성적/출결/수강료'+(HW.length?'/숙제':'')+')');
+  const sheets=['학생목록','반(수업)','강사','성적','출결(학생)','출결(강사)','수강료','배지','공지사항','숙제','학부모소통','강사소통','학생소통','강사채팅','시험유형'];
+  toast('Excel 전체 백업 완료 — '+sheets.length+'개 시트');
 }
 
 // ── CSV 개별 다운로드 선택 모달 ─────────────────────────
