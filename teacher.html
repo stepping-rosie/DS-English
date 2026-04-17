@@ -793,7 +793,6 @@ function renderStudents(){
     .filter(s=>!s.schoolDays||!s.schoolDays.length||s.schoolDays.includes(dow));
   const classes=_l('classes');
   const studentBadges=_l('studentBadges');
-  const attDate=document.getElementById('att-date').value||todayStr();
   const att=_lo('att');
   const key=attDate.replace(/-/g,'');
   const dayAtt=att[key]||{};
