@@ -420,6 +420,7 @@ function showTab(name){
     document.getElementById('tab-'+t).style.display=t===name?'':'none';
     document.getElementById('tab-'+t+'-btn').classList.toggle('active',t===name);
   });
+  if(name==='att'){renderCalendar();renderAttTimes();}
   if(name==='hw')renderHomework();
   if(name==='badges')renderBadges();
   if(name==='ann'){renderAnn();renderStudentMsgs();}
