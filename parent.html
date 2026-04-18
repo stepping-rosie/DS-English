@@ -322,7 +322,8 @@ const BADGE_DEFS=[
   {id:'b6',name:'집중상',icon:'🎯',color:'#0891b2',bg:'rgba(8,145,178,0.12)',desc:'수업 집중력 우수'},
 ];
 // _l, _lo — firebase.js에서 전역으로 제공
-function gradeLabel(s){if(s>=100)return{l:'A',c:'#1a9e6a'};if(s>=90)return{l:'B',c:'#3b82f6'};if(s>=80)return{l:'C',c:'#3b82f6'};if(s>=70)return{l:'D',c:'#c87a0d'};if(s>=60)return{l:'E',c:'#c87a0d'};return{l:'F',c:'#d63850'};}
+function _getGR(){const s=localStorage.getItem('ds_gradeRanges');return s?JSON.parse(s):{A:100,B:90,C:80,D:70,E:60};}
+function gradeLabel(s){const r=_getGR();if(s>=r.A)return{l:'A',c:'#1a9e6a'};if(s>=r.B)return{l:'B',c:'#3b82f6'};if(s>=r.C)return{l:'C',c:'#3b82f6'};if(s>=r.D)return{l:'D',c:'#c87a0d'};if(s>=r.E)return{l:'E',c:'#c87a0d'};return{l:'F',c:'#d63850'};}
 
 let me=null;
 let calY=new Date().getFullYear(), calM=new Date().getMonth();

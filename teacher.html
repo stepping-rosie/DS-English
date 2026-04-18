@@ -372,8 +372,8 @@ tbody tr:hover{background:var(--bg3)}
       <button class="btn btn-ghost btn-sm" style="margin-top:8px;font-size:11px" onclick="resetExamTypes()">↺ 기본값으로 초기화</button>
     </div>
 
-    <div style="font-size:12px;color:var(--text3);margin-bottom:12px;background:var(--bg3);padding:8px 14px;border-radius:8px;border:1px solid var(--border)">
-      📊 등급 기준 — A: 85~100점 &nbsp;·&nbsp; B: 70~84점 &nbsp;·&nbsp; C: 60~69점 &nbsp;·&nbsp; D: 60점 미만
+    <div id="grade-criteria-bar" style="font-size:12px;color:var(--text3);margin-bottom:12px;background:var(--bg3);padding:8px 14px;border-radius:8px;border:1px solid var(--border)">
+      📊 등급 기준 — (로딩 중)
     </div>
     <div class="grade-tbl-wrap">
       <table class="grade-tbl">
@@ -1099,6 +1099,13 @@ function showTab(name){
 }
 
 // ── 성적 관리 ──
+function _getGR(){const s=localStorage.getItem('ds_gradeRanges');return s?JSON.parse(s):{A:100,B:90,C:80,D:70,E:60};}
+function getGradeMap(){const r=_getGR();return{A:r.A,B:r.B,C:r.C,D:r.D,E:r.E,F:0};}
+function updateGradeCriteriaBar(){
+  const r=_getGR();
+  const bar=document.getElementById('grade-criteria-bar');
+  if(bar)bar.innerHTML=`📊 등급 기준 &nbsp;—&nbsp; A: ${r.A}점 이상 &nbsp;·&nbsp; B: ${r.B}~${r.A-1}점 &nbsp;·&nbsp; C: ${r.C}~${r.B-1}점 &nbsp;·&nbsp; D: ${r.D}~${r.C-1}점 &nbsp;·&nbsp; E: ${r.E}~${r.D-1}점 &nbsp;·&nbsp; F: ${r.E-1}점 이하`;
+}
 const GRADE_MAP={'A':100,'B':90,'C':80,'D':70,'E':60,'F':0};
 const DEFAULT_EXAM_TYPES=['독해교재','문법교재','중간평가','단어시험','추가단어시험','모의고사','쓰기평가','기타시험'];
 
@@ -1179,6 +1186,7 @@ function enterGrades(){
 
 function renderGrades(){
   if(!me)return;
+  updateGradeCriteriaBar();
   const cf=document.getElementById('grade-class-filter').value;
   const examType=document.getElementById('grade-exam-type').value;
   const dateVal=document.getElementById('grade-date').value||todayStr();
@@ -1227,7 +1235,8 @@ function renderGrades(){
 }
 
 function gradeFromScore(score){
-  if(score>=100)return'A';if(score>=90)return'B';if(score>=80)return'C';if(score>=70)return'D';if(score>=60)return'E';return'F';
+  const r=_getGR();
+  if(score>=r.A)return'A';if(score>=r.B)return'B';if(score>=r.C)return'C';if(score>=r.D)return'D';if(score>=r.E)return'E';return'F';
 }
 
 function updateGradeColor(sid){
@@ -1254,7 +1263,7 @@ function saveGrades(){
     const memo=document.getElementById('gm-'+s.id);
     if(!sel||!sel.value)return;
     const grade=sel.value;
-    const score=GRADE_MAP[grade]||0;
+    const score=getGradeMap()[grade]??0;
     const domain=dsel?dsel.value:'';
     // 같은 날짜+시험+영역 기존 레코드 제거 후 추가
     const idx=SC.findIndex(sc=>sc.studentId===s.id&&sc.name===examType&&sc.domain===domain&&sc.date===dateVal);

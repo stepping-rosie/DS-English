@@ -494,7 +494,47 @@ textarea{resize:vertical;min-height:80px}
       <div class="section-header">
         <div class="section-title">성적 / 평가</div>
         <div class="search-bar"><span style="color:var(--text3)">🔍</span><input type="text" placeholder="학생명, 시험명..." id="score-search" oninput="renderScores()"></div>
+        <button class="btn btn-ghost btn-sm" onclick="toggleGradeSettings()">⚙️ 등급 설정</button>
         <button class="btn btn-primary ml-auto" onclick="openModal('score')">+ 성적 입력</button>
+      </div>
+      <!-- 등급 범위 설정 패널 -->
+      <div id="grade-settings-panel" style="display:none;background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);padding:16px 20px;margin-bottom:16px">
+        <div style="font-size:13px;font-weight:600;margin-bottom:14px;color:var(--text)">📊 등급 기준 설정 <span style="font-size:11px;font-weight:400;color:var(--text3)">(각 등급의 최소 점수를 입력하세요)</span></div>
+        <div style="display:flex;gap:16px;flex-wrap:wrap;align-items:center">
+          <div style="display:flex;align-items:center;gap:6px">
+            <span style="font-weight:700;color:var(--green);width:18px">A</span>
+            <input type="number" id="gr-A" min="0" max="100" style="width:58px;text-align:center">
+            <span style="font-size:11px;color:var(--text3)">점 이상</span>
+          </div>
+          <div style="display:flex;align-items:center;gap:6px">
+            <span style="font-weight:700;color:#4f8ef7;width:18px">B</span>
+            <input type="number" id="gr-B" min="0" max="100" style="width:58px;text-align:center">
+            <span style="font-size:11px;color:var(--text3)">점 이상</span>
+          </div>
+          <div style="display:flex;align-items:center;gap:6px">
+            <span style="font-weight:700;color:#4f8ef7;width:18px">C</span>
+            <input type="number" id="gr-C" min="0" max="100" style="width:58px;text-align:center">
+            <span style="font-size:11px;color:var(--text3)">점 이상</span>
+          </div>
+          <div style="display:flex;align-items:center;gap:6px">
+            <span style="font-weight:700;color:var(--amber);width:18px">D</span>
+            <input type="number" id="gr-D" min="0" max="100" style="width:58px;text-align:center">
+            <span style="font-size:11px;color:var(--text3)">점 이상</span>
+          </div>
+          <div style="display:flex;align-items:center;gap:6px">
+            <span style="font-weight:700;color:var(--amber);width:18px">E</span>
+            <input type="number" id="gr-E" min="0" max="100" style="width:58px;text-align:center">
+            <span style="font-size:11px;color:var(--text3)">점 이상</span>
+          </div>
+          <div style="display:flex;align-items:center;gap:6px">
+            <span style="font-weight:700;color:var(--red);width:18px">F</span>
+            <span id="gr-F-label" style="font-size:12px;color:var(--text3)"></span>
+          </div>
+          <div style="margin-left:auto;display:flex;gap:8px">
+            <button class="btn btn-ghost btn-sm" onclick="resetGradeRanges()">초기화</button>
+            <button class="btn btn-primary btn-sm" onclick="saveGradeRanges()">저장</button>
+          </div>
+        </div>
       </div>
       <div class="score-summary">
         <div class="score-box"><div class="score-num" id="score-avg" style="color:var(--accent)">-</div><div class="score-lbl">전체 평균</div></div>
@@ -1379,7 +1419,31 @@ function saveScore(){
   DB.scores=S;toast('성적 입력되었습니다');closeModal('score');renderScores();
 }
 function deleteScore(id){if(!confirm('삭제?'))return;DB.scores=DB.scores.filter(s=>s.id!==id);toast('삭제되었습니다');renderScores();}
-function grade(s){if(s>=100)return{l:'A',c:'badge-green'};if(s>=90)return{l:'B',c:'badge-blue'};if(s>=80)return{l:'C',c:'badge-blue'};if(s>=70)return{l:'D',c:'badge-amber'};if(s>=60)return{l:'E',c:'badge-amber'};return{l:'F',c:'badge-red'};}
+const _DEF_GRADES={A:100,B:90,C:80,D:70,E:60};
+function getGradeRanges(){const s=localStorage.getItem('ds_gradeRanges');return s?JSON.parse(s):{..._DEF_GRADES};}
+function grade(s){const r=getGradeRanges();if(s>=r.A)return{l:'A',c:'badge-green'};if(s>=r.B)return{l:'B',c:'badge-blue'};if(s>=r.C)return{l:'C',c:'badge-blue'};if(s>=r.D)return{l:'D',c:'badge-amber'};if(s>=r.E)return{l:'E',c:'badge-amber'};return{l:'F',c:'badge-red'};}
+function toggleGradeSettings(){
+  const p=document.getElementById('grade-settings-panel');
+  if(p.style.display==='none'){p.style.display='block';_fillGradeInputs();}else{p.style.display='none';}
+}
+function _fillGradeInputs(){
+  const r=getGradeRanges();
+  ['A','B','C','D','E'].forEach(g=>document.getElementById('gr-'+g).value=r[g]);
+  document.getElementById('gr-F-label').textContent=`E(${r.E}점) 미만`;
+}
+function saveGradeRanges(){
+  const vals={};let ok=true;
+  ['A','B','C','D','E'].forEach(g=>{const v=parseInt(document.getElementById('gr-'+g).value);if(isNaN(v)||v<0||v>100)ok=false;vals[g]=v;});
+  if(!ok){toast('0~100 사이 숫자를 입력하세요','error');return;}
+  if(!(vals.A>vals.B&&vals.B>vals.C&&vals.C>vals.D&&vals.D>vals.E)){toast('점수 순서: A > B > C > D > E 여야 합니다','error');return;}
+  localStorage.setItem('ds_gradeRanges',JSON.stringify(vals));
+  document.getElementById('gr-F-label').textContent=`E(${vals.E}점) 미만`;
+  toast('등급 기준이 저장되었습니다');renderScores();
+}
+function resetGradeRanges(){
+  localStorage.removeItem('ds_gradeRanges');
+  _fillGradeInputs();toast('기본값으로 초기화되었습니다');renderScores();
+}
 function renderScores(){
   const SC=DB.scores,S=DB.students;
   const q=(document.getElementById('score-search').value||'').toLowerCase();
