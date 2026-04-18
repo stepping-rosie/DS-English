@@ -236,6 +236,15 @@ textarea{resize:vertical;min-height:80px}
 .login-btn{width:100%;padding:13px;background:#4f8ef7;color:#fff;border:none;border-radius:10px;font-size:15px;font-weight:600;cursor:pointer;font-family:var(--font);transition:all .15s;margin-top:6px}
 .login-btn:hover{background:#3a6fd4;transform:translateY(-1px);box-shadow:0 4px 12px rgba(79,142,247,0.3)}
 .login-hint{font-size:11px;color:#8896b8;text-align:center;margin-top:12px;line-height:1.6}
+/* 첨부파일 */
+.file-input{width:100%;padding:8px 10px;border:1.5px dashed var(--border2);border-radius:8px;background:var(--bg);color:var(--text);cursor:pointer;font-size:13px;font-family:var(--font);transition:border-color .15s}
+.file-input:hover{border-color:var(--accent);background:var(--bg3)}
+.file-preview{margin-top:7px}
+.file-preview img{max-height:72px;border-radius:6px;border:1px solid var(--border);display:block}
+.file-preview .pdf-chip{display:inline-flex;align-items:center;gap:5px;font-size:12px;color:var(--text2);background:var(--bg3);border:1px solid var(--border);border-radius:6px;padding:5px 10px}
+.att-thumb{max-height:28px;border-radius:3px;border:1px solid var(--border);vertical-align:middle;cursor:pointer}
+.att-link{color:var(--accent);font-size:12px;text-decoration:none;white-space:nowrap}
+.att-link:hover{text-decoration:underline}
 </style>
 </head>
 <body>
@@ -552,19 +561,19 @@ textarea{resize:vertical;min-height:80px}
     <!-- MESSAGES -->
     <div id="page-messages" class="hidden">
       <div class="section-header"><div class="section-title">학부모 소통</div><button class="btn btn-primary ml-auto" onclick="openModal('message')">+ 메시지 작성</button></div>
-      <div class="table-wrap"><table><thead><tr><th>학생</th><th>유형</th><th>내용</th><th>날짜</th><th>관리</th></tr></thead><tbody id="msg-tbody"></tbody></table></div>
+      <div class="table-wrap"><table><thead><tr><th>학생</th><th>유형</th><th>내용</th><th>첨부</th><th>날짜</th><th>관리</th></tr></thead><tbody id="msg-tbody"></tbody></table></div>
     </div>
 
     <!-- TEACHER MESSAGES -->
     <div id="page-teachermsgs" class="hidden">
       <div class="section-header"><div class="section-title">선생님 소통</div><button class="btn btn-primary ml-auto" onclick="openModal('teachermsg')">+ 메시지 작성</button></div>
-      <div class="table-wrap"><table><thead><tr><th>강사</th><th>유형</th><th>내용</th><th>날짜</th><th>관리</th></tr></thead><tbody id="tmsg-tbody"></tbody></table></div>
+      <div class="table-wrap"><table><thead><tr><th>강사</th><th>유형</th><th>내용</th><th>첨부</th><th>날짜</th><th>관리</th></tr></thead><tbody id="tmsg-tbody"></tbody></table></div>
     </div>
 
     <!-- STUDENT MESSAGES -->
     <div id="page-studentmsgs" class="hidden">
       <div class="section-header"><div class="section-title">학생 소통</div><button class="btn btn-primary ml-auto" onclick="openModal('studentmsg')">+ 메시지 작성</button></div>
-      <div class="table-wrap"><table><thead><tr><th>학생</th><th>유형</th><th>내용</th><th>날짜</th><th>관리</th></tr></thead><tbody id="smsg-tbody"></tbody></table></div>
+      <div class="table-wrap"><table><thead><tr><th>학생</th><th>유형</th><th>내용</th><th>첨부</th><th>날짜</th><th>관리</th></tr></thead><tbody id="smsg-tbody"></tbody></table></div>
     </div>
 
     <!-- BADGES -->
@@ -712,6 +721,10 @@ textarea{resize:vertical;min-height:80px}
     <div class="form-group"><label>유형</label><select id="m-type"><option>출결 알림</option><option>성적 통보</option><option>납부 안내</option><option>상담 내용</option><option>공지</option><option>기타</option></select></div>
     <div class="form-group"><label>날짜</label><input type="date" id="m-date"></div>
     <div class="form-group span2"><label>내용 *</label><textarea id="m-content" style="min-height:100px"></textarea></div>
+    <div class="form-group span2"><label>첨부파일 <span style="font-size:11px;color:var(--text3);font-weight:400">(사진·PDF, 최대 10MB)</span></label>
+      <input type="file" id="m-file" class="file-input" accept="image/*,.pdf" onchange="previewFile('m-file','m-file-preview')">
+      <div id="m-file-preview" class="file-preview"></div>
+    </div>
   </div></div>
   <div class="modal-footer"><button class="btn btn-ghost" onclick="closeModal('message')">취소</button><button class="btn btn-primary" onclick="saveMessage()">저장</button></div></div>
 </div>
@@ -724,6 +737,10 @@ textarea{resize:vertical;min-height:80px}
     <div class="form-group"><label>유형</label><select id="tm-type"><option>업무 안내</option><option>수업 안내</option><option>급여 관련</option><option>일정 안내</option><option>기타</option></select></div>
     <div class="form-group"><label>날짜</label><input type="date" id="tm-date"></div>
     <div class="form-group span2"><label>내용 *</label><textarea id="tm-content" style="min-height:100px"></textarea></div>
+    <div class="form-group span2"><label>첨부파일 <span style="font-size:11px;color:var(--text3);font-weight:400">(사진·PDF, 최대 10MB)</span></label>
+      <input type="file" id="tm-file" class="file-input" accept="image/*,.pdf" onchange="previewFile('tm-file','tm-file-preview')">
+      <div id="tm-file-preview" class="file-preview"></div>
+    </div>
   </div></div>
   <div class="modal-footer"><button class="btn btn-ghost" onclick="closeModal('teachermsg')">취소</button><button class="btn btn-primary" onclick="saveTeacherMsg()">저장</button></div></div>
 </div>
@@ -736,6 +753,10 @@ textarea{resize:vertical;min-height:80px}
     <div class="form-group"><label>유형</label><select id="sm-type"><option>학습 안내</option><option>출결 알림</option><option>성적 통보</option><option>수업 공지</option><option>기타</option></select></div>
     <div class="form-group"><label>날짜</label><input type="date" id="sm-date"></div>
     <div class="form-group span2"><label>내용 *</label><textarea id="sm-content" style="min-height:100px"></textarea></div>
+    <div class="form-group span2"><label>첨부파일 <span style="font-size:11px;color:var(--text3);font-weight:400">(사진·PDF, 최대 10MB)</span></label>
+      <input type="file" id="sm-file" class="file-input" accept="image/*,.pdf" onchange="previewFile('sm-file','sm-file-preview')">
+      <div id="sm-file-preview" class="file-preview"></div>
+    </div>
   </div></div>
   <div class="modal-footer"><button class="btn btn-ghost" onclick="closeModal('studentmsg')">취소</button><button class="btn btn-primary" onclick="saveStudentMsg()">저장</button></div></div>
 </div>
@@ -796,6 +817,7 @@ textarea{resize:vertical;min-height:80px}
 <!-- Firebase SDK -->
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-storage-compat.js"></script>
 <script src="firebase.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 
@@ -918,9 +940,9 @@ function openModal(type){
   if(type==='student'&&!editId.student){_clrStudent();document.getElementById('s-date').value=todayStr();}
   if(type==='fee'&&!editId.fee){document.getElementById('f-month').value=nowMonth();}
   if(type==='score'){document.getElementById('sc-date').value=todayStr();}
-  if(type==='message'){document.getElementById('m-date').value=todayStr();}
-  if(type==='teachermsg'){document.getElementById('tm-date').value=todayStr();document.getElementById('tm-content').value='';}
-  if(type==='studentmsg'){document.getElementById('sm-date').value=todayStr();document.getElementById('sm-content').value='';}
+  if(type==='message'){document.getElementById('m-date').value=todayStr();document.getElementById('m-content').value='';document.getElementById('m-file').value='';document.getElementById('m-file-preview').innerHTML='';}
+  if(type==='teachermsg'){document.getElementById('tm-date').value=todayStr();document.getElementById('tm-content').value='';document.getElementById('tm-file').value='';document.getElementById('tm-file-preview').innerHTML='';}
+  if(type==='studentmsg'){document.getElementById('sm-date').value=todayStr();document.getElementById('sm-content').value='';document.getElementById('sm-file').value='';document.getElementById('sm-file-preview').innerHTML='';}
   if(type==='teacher'&&!editId.teacher){_clrTeacher();document.getElementById('t-hire').value=todayStr();}
   document.getElementById('modal-'+type).classList.add('open');
 }
@@ -1472,70 +1494,136 @@ function renderScores(){
   }).join('');
 }
 
+// ══ 첨부파일 업로드 (Firebase Storage) ══
+let _storage=null;
+function initStorage(){try{_storage=firebase.storage();}catch(e){console.warn('[Storage]',e);}}
+
+function previewFile(inputId,previewId){
+  const file=document.getElementById(inputId).files[0];
+  const el=document.getElementById(previewId);
+  if(!file){el.innerHTML='';return;}
+  if(file.type.startsWith('image/')){
+    const url=URL.createObjectURL(file);
+    el.innerHTML=`<img src="${url}" alt="미리보기">`;
+  } else {
+    el.innerHTML=`<div class="pdf-chip">📄 ${file.name} (${(file.size/1024/1024).toFixed(1)}MB)</div>`;
+  }
+}
+
+async function uploadAttachment(file){
+  if(!_storage){toast('Storage 초기화 실패. 관리자에게 문의하세요.','error');return null;}
+  if(file.size>10*1024*1024){toast('파일 크기는 10MB 이하여야 합니다','error');return null;}
+  const path=`msg-attachments/${Date.now()}_${file.name}`;
+  try{
+    const ref=_storage.ref(path);
+    await ref.put(file);
+    const url=await ref.getDownloadURL();
+    return {name:file.name,type:file.type,url};
+  }catch(e){
+    console.error('[Storage 업로드]',e);
+    toast('파일 업로드 실패: '+e.message,'error');
+    return null;
+  }
+}
+
+function attHtml(att){
+  if(!att)return '';
+  if(att.type&&att.type.startsWith('image/'))
+    return `<a href="${att.url}" target="_blank"><img class="att-thumb" src="${att.url}" title="${att.name}"></a>`;
+  return `<a class="att-link" href="${att.url}" target="_blank">📄 ${att.name}</a>`;
+}
+
 // ══ MESSAGES ══
-function saveMessage(){
+async function saveMessage(){
   const sId=document.getElementById('m-student').value,content=document.getElementById('m-content').value.trim();
   if(!sId||!content){toast('학생과 내용을 입력하세요','error');return;}
+  const fileEl=document.getElementById('m-file');
+  let attachment=null;
+  if(fileEl.files[0]){
+    toast('파일 업로드 중...');
+    attachment=await uploadAttachment(fileEl.files[0]);
+    if(attachment===null)return;
+  }
   const M=DB.messages;
-  M.push({id:uid(),studentId:sId,type:document.getElementById('m-type').value,content,date:document.getElementById('m-date').value});
-  DB.messages=M;toast('저장되었습니다');closeModal('message');renderMessages();
+  const msg={id:uid(),studentId:sId,type:document.getElementById('m-type').value,content,date:document.getElementById('m-date').value};
+  if(attachment)msg.attachment=attachment;
+  M.push(msg);DB.messages=M;toast('저장되었습니다');closeModal('message');renderMessages();
 }
 function deleteMessage(id){if(!confirm('삭제?'))return;DB.messages=DB.messages.filter(m=>m.id!==id);toast('삭제되었습니다');renderMessages();}
 function renderMessages(){
   const M=DB.messages,S=DB.students;
   const tc={'출결 알림':'badge-amber','성적 통보':'badge-blue','납부 안내':'badge-red','상담 내용':'badge-purple','공지':'badge-green','기타':'badge-gray'};
   const tb=document.getElementById('msg-tbody');
-  if(!M.length){tb.innerHTML=`<tr><td colspan="5"><div class="empty-state"><div class="empty-icon">💬</div><div class="empty-text">메시지 없음</div></div></td></tr>`;return;}
+  if(!M.length){tb.innerHTML=`<tr><td colspan="6"><div class="empty-state"><div class="empty-icon">💬</div><div class="empty-text">메시지 없음</div></div></td></tr>`;return;}
   tb.innerHTML=[...M].sort((a,b)=>(b.date||'').localeCompare(a.date||'')).map(m=>{
     const s=S.find(x=>x.id===m.studentId);
     return `<tr><td class="td-name">${s?s.name:'?'}</td><td><span class="badge ${tc[m.type]||'badge-gray'}">${m.type}</span></td>
-      <td style="max-width:280px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${m.content}</td>
+      <td style="max-width:240px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${m.content}</td>
+      <td>${attHtml(m.attachment)}</td>
       <td style="font-size:12px;color:var(--text3)">${m.date||'-'}</td>
       <td><button class="btn btn-danger btn-sm" onclick="deleteMessage('${m.id}')">삭제</button></td></tr>`;
   }).join('');
 }
 
 // ══ TEACHER MESSAGES ══
-function saveTeacherMsg(){
+async function saveTeacherMsg(){
   const tId=document.getElementById('tm-teacher').value,content=document.getElementById('tm-content').value.trim();
   if(!tId||!content){toast('강사와 내용을 입력하세요','error');return;}
+  const fileEl=document.getElementById('tm-file');
+  let attachment=null;
+  if(fileEl.files[0]){
+    toast('파일 업로드 중...');
+    attachment=await uploadAttachment(fileEl.files[0]);
+    if(attachment===null)return;
+  }
   const M=DB.teacherMessages;
-  M.push({id:uid(),teacherId:tId,type:document.getElementById('tm-type').value,content,date:document.getElementById('tm-date').value});
-  DB.teacherMessages=M;toast('저장되었습니다');closeModal('teachermsg');renderTeacherMessages();
+  const msg={id:uid(),teacherId:tId,type:document.getElementById('tm-type').value,content,date:document.getElementById('tm-date').value};
+  if(attachment)msg.attachment=attachment;
+  M.push(msg);DB.teacherMessages=M;toast('저장되었습니다');closeModal('teachermsg');renderTeacherMessages();
 }
 function deleteTeacherMsg(id){if(!confirm('삭제?'))return;DB.teacherMessages=DB.teacherMessages.filter(m=>m.id!==id);toast('삭제되었습니다');renderTeacherMessages();}
 function renderTeacherMessages(){
   const M=DB.teacherMessages,T=DB.teachers;
   const tc={'업무 안내':'badge-blue','수업 안내':'badge-green','급여 관련':'badge-amber','일정 안내':'badge-purple','기타':'badge-gray'};
   const tb=document.getElementById('tmsg-tbody');
-  if(!M.length){tb.innerHTML=`<tr><td colspan="5"><div class="empty-state"><div class="empty-icon">💬</div><div class="empty-text">메시지 없음</div></div></td></tr>`;return;}
+  if(!M.length){tb.innerHTML=`<tr><td colspan="6"><div class="empty-state"><div class="empty-icon">💬</div><div class="empty-text">메시지 없음</div></div></td></tr>`;return;}
   tb.innerHTML=[...M].sort((a,b)=>(b.date||'').localeCompare(a.date||'')).map(m=>{
     const t=T.find(x=>x.id===m.teacherId);
     return `<tr><td class="td-name">${t?t.name:'?'}</td><td><span class="badge ${tc[m.type]||'badge-gray'}">${m.type}</span></td>
-      <td style="max-width:280px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${m.content}</td>
+      <td style="max-width:240px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${m.content}</td>
+      <td>${attHtml(m.attachment)}</td>
       <td style="font-size:12px;color:var(--text3)">${m.date||'-'}</td>
       <td><button class="btn btn-danger btn-sm" onclick="deleteTeacherMsg('${m.id}')">삭제</button></td></tr>`;
   }).join('');
 }
 
 // ══ STUDENT MESSAGES ══
-function saveStudentMsg(){
+async function saveStudentMsg(){
   const sId=document.getElementById('sm-student').value,content=document.getElementById('sm-content').value.trim();
   if(!sId||!content){toast('학생과 내용을 입력하세요','error');return;}
+  const fileEl=document.getElementById('sm-file');
+  let attachment=null;
+  if(fileEl.files[0]){
+    toast('파일 업로드 중...');
+    attachment=await uploadAttachment(fileEl.files[0]);
+    if(attachment===null)return;
+  }
   const M=DB.studentMessages;
-  M.push({id:uid(),studentId:sId,type:document.getElementById('sm-type').value,content,date:document.getElementById('sm-date').value});
-  DB.studentMessages=M;toast('저장되었습니다');closeModal('studentmsg');renderStudentMessages();
+  const msg={id:uid(),studentId:sId,type:document.getElementById('sm-type').value,content,date:document.getElementById('sm-date').value};
+  if(attachment)msg.attachment=attachment;
+  M.push(msg);DB.studentMessages=M;toast('저장되었습니다');closeModal('studentmsg');renderStudentMessages();
 }
 function deleteStudentMsg(id){if(!confirm('삭제?'))return;DB.studentMessages=DB.studentMessages.filter(m=>m.id!==id);toast('삭제되었습니다');renderStudentMessages();}
 function renderStudentMessages(){
   const M=DB.studentMessages,S=DB.students;
   const tc={'학습 안내':'badge-blue','출결 알림':'badge-amber','성적 통보':'badge-green','수업 공지':'badge-purple','기타':'badge-gray'};
   const tb=document.getElementById('smsg-tbody');
-  if(!M.length){tb.innerHTML=`<tr><td colspan="5"><div class="empty-state"><div class="empty-icon">💬</div><div class="empty-text">메시지 없음</div></div></td></tr>`;return;}
+  if(!M.length){tb.innerHTML=`<tr><td colspan="6"><div class="empty-state"><div class="empty-icon">💬</div><div class="empty-text">메시지 없음</div></div></td></tr>`;return;}
   tb.innerHTML=[...M].sort((a,b)=>(b.date||'').localeCompare(a.date||'')).map(m=>{
     const s=S.find(x=>x.id===m.studentId);
     return `<tr><td class="td-name">${s?s.name:'?'}</td><td><span class="badge ${tc[m.type]||'badge-gray'}">${m.type}</span></td>
-      <td style="max-width:280px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${m.content}</td>
+      <td style="max-width:240px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${m.content}</td>
+      <td>${attHtml(m.attachment)}</td>
       <td style="font-size:12px;color:var(--text3)">${m.date||'-'}</td>
       <td><button class="btn btn-danger btn-sm" onclick="deleteStudentMsg('${m.id}')">삭제</button></td></tr>`;
   }).join('');
@@ -2258,6 +2346,7 @@ function openLearningTool(){
 // ══ INIT ══
 (async function(){
   const ok = await fbInit();
+  initStorage();
   document.getElementById('fb-loading').style.display='none';
   if(!ok){alert('Firebase 연결 실패.\n인터넷 연결을 확인하거나 firebase.js의 설정값을 확인하세요.');}
 
