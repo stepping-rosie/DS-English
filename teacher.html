@@ -1099,12 +1099,12 @@ function showTab(name){
 }
 
 // ── 성적 관리 ──
-function _getGR(){const s=localStorage.getItem('ds_gradeRanges');return s?JSON.parse(s):{A:100,B:90,C:80,D:70,E:60};}
-function getGradeMap(){const r=_getGR();return{A:r.A,B:r.B,C:r.C,D:r.D,E:r.E,F:0};}
+function _getGR(){const s=localStorage.getItem('ds_gradeRanges');const r=s?JSON.parse(s):{A:90,B:80,C:70,D:60,E:50};if(r['A+']==null)r['A+']=100;return r;}
+function getGradeMap(){const r=_getGR();return{'A+':r['A+'],A:r.A,B:r.B,C:r.C,D:r.D,E:r.E,F:0};}
 function updateGradeCriteriaBar(){
   const r=_getGR();
   const bar=document.getElementById('grade-criteria-bar');
-  if(bar)bar.innerHTML=`📊 등급 기준 &nbsp;—&nbsp; A: ${r.A}점 이상 &nbsp;·&nbsp; B: ${r.B}~${r.A-1}점 &nbsp;·&nbsp; C: ${r.C}~${r.B-1}점 &nbsp;·&nbsp; D: ${r.D}~${r.C-1}점 &nbsp;·&nbsp; E: ${r.E}~${r.D-1}점 &nbsp;·&nbsp; F: ${r.E-1}점 이하`;
+  if(bar)bar.innerHTML=`📊 등급 기준 &nbsp;—&nbsp; A+: ${r['A+']}점 &nbsp;·&nbsp; A: ${r.A}~${r['A+']-1}점 &nbsp;·&nbsp; B: ${r.B}~${r.A-1}점 &nbsp;·&nbsp; C: ${r.C}~${r.B-1}점 &nbsp;·&nbsp; D: ${r.D}~${r.C-1}점 &nbsp;·&nbsp; E: ${r.E}~${r.D-1}점 &nbsp;·&nbsp; F: ${r.E-1}점 이하`;
 }
 const GRADE_MAP={'A':100,'B':90,'C':80,'D':70,'E':60,'F':0};
 const DEFAULT_EXAM_TYPES=['독해교재','문법교재','중간평가','단어시험','추가단어시험','모의고사','쓰기평가','기타시험'];
@@ -1197,6 +1197,7 @@ function renderGrades(){
   const allScores=_l('scores');
   const classes=_l('classes');
   const tb=document.getElementById('grade-body');
+  const gm=getGradeMap();
   if(!students.length){
     tb.innerHTML=`<tr><td colspan="5" class="grade-td" style="padding:20px;text-align:center;color:var(--text3)">학생이 없습니다</td></tr>`;
     return;
@@ -1220,11 +1221,12 @@ function renderGrades(){
       <td class="grade-td">
         <select class="grade-sel" id="g-${s.id}" onchange="updateGradeColor('${s.id}')">
           <option value="">-</option>
-          <option value="A" class="grade-A">A (100)</option>
-          <option value="B" class="grade-B">B (90)</option>
-          <option value="C" class="grade-C">C (80)</option>
-          <option value="D" class="grade-D">D (70)</option>
-          <option value="E" class="grade-D">E (60)</option>
+          <option value="A+" class="grade-A">A+ (${gm['A+']})</option>
+          <option value="A" class="grade-A">A (${gm.A})</option>
+          <option value="B" class="grade-B">B (${gm.B})</option>
+          <option value="C" class="grade-C">C (${gm.C})</option>
+          <option value="D" class="grade-D">D (${gm.D})</option>
+          <option value="E" class="grade-D">E (${gm.E})</option>
           <option value="F" class="grade-D">F</option>
         </select>
       </td>
@@ -1236,7 +1238,7 @@ function renderGrades(){
 
 function gradeFromScore(score){
   const r=_getGR();
-  if(score>=r.A)return'A';if(score>=r.B)return'B';if(score>=r.C)return'C';if(score>=r.D)return'D';if(score>=r.E)return'E';return'F';
+  if(score>=r['A+'])return'A+';if(score>=r.A)return'A';if(score>=r.B)return'B';if(score>=r.C)return'C';if(score>=r.D)return'D';if(score>=r.E)return'E';return'F';
 }
 
 function updateGradeColor(sid){
