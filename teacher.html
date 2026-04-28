@@ -796,6 +796,8 @@ function renderStudents(){
   const att=_lo('att');
   const key=attDate.replace(/-/g,'');
   const dayAtt=att[key]||{};
+  const attTimes=_lo('attTime');
+  const dayTimes=attTimes[key]||{};
 
   document.getElementById('stu-count').textContent=students.length+'명';
   renderMonthlyAtt();
@@ -812,6 +814,7 @@ function renderStudents(){
     const saved=dayAtt[s.id];
     const pend=stuPending[attDate]?stuPending[attDate][s.id]:undefined;
     const st=pend!==undefined?pend:saved;
+    const checkTime=dayTimes[s.id]||'';
     const badgeHtml=myBadges.slice(0,3).map(b=>{
       const def=BADGE_DEFS.find(d=>d.id===b.badgeId)||{icon:'🏅',color:'#888'};
       return `<span title="${def.name}" style="font-size:16px">${def.icon}</span>`;
@@ -826,7 +829,7 @@ function renderStudents(){
         <button class="ab ab-abs${st==='abs'?' on':''}" onclick="setStuAtt('${s.id}','abs',this,'${attDate}')">결석</button>
         <button class="ab ab-makeup${st==='makeup'?' on':''}" onclick="setStuAtt('${s.id}','makeup',this,'${attDate}')">보강</button>
         <button class="ab ab-noclass${st==='noclass'?' on':''}" onclick="setStuAtt('${s.id}','noclass',this,'${attDate}')">수업없음</button>
-      </div></td>
+      </div>${checkTime?`<div style="font-size:11px;color:var(--green);font-weight:600;font-family:var(--mono);margin-top:5px">🕐 QR ${checkTime}</div>`:''}</td>
       <td>${badgeHtml||'-'}</td>
       <td style="white-space:nowrap;display:flex;flex-direction:column;gap:3px;padding:8px 12px">
         <button class="btn btn-sm" style="background:var(--purple-bg);color:var(--purple);border:1px solid rgba(124,92,252,0.2);font-size:11px" onclick="openBadgeModal('${s.id}','${s.name}')">🏅 배지</button>
